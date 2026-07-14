@@ -370,3 +370,231 @@ footer{padding:44px 0 60px; color:var(--muted); font-size:13px; border-top:1px s
 /* ============ SPECIFIC GAME DOM STYLES ============ */
 .g2048-board{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; width:min(90vw,340px); aspect-ratio:1; background:var(--panel-strong); padding:8px; border-radius:14px;}
 .g2048-cell{aspect-ratio:1; border-radius:8px; background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-weight:700; font-size:clamp(14px,4.4vw,26px); transition:background .15s ease, transform .1s ease;}
+.ttt-board{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; width:min(85vw,320px); aspect-ratio:1;}
+.ttt-cell{background:rgba(255,255,255,0.06); border-radius:12px; display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-weight:700; font-size:clamp(28px,8vw,46px);}
+.ttt-cell.win{background:var(--accent3); color:#0b3312;}
+.mem-board{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; width:min(90vw,340px);}
+.mem-card{aspect-ratio:.85; border-radius:10px; background:var(--grad-marquee); display:flex; align-items:center; justify-content:center; font-size:26px; cursor:pointer; transform-style:preserve-3d; transition:transform .35s ease; position:relative;}
+.mem-card .face{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; border-radius:10px; backface-visibility:hidden;}
+.mem-card .front{background:rgba(255,255,255,0.08); transform:rotateY(180deg);}
+.mem-card .back{background:var(--grad-marquee); font-size:20px;}
+.mem-card.flipped{transform:rotateY(180deg);}
+.mem-card.matched{opacity:.45; cursor:default;}
+
+/* ============ TOAST ============ */
+#toast{position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--panel-strong); border:1px solid var(--panel-border); color:var(--text); padding:11px 20px; border-radius:999px; font-size:13.5px; font-weight:600; backdrop-filter:blur(14px); z-index:500; opacity:0; transition:all .3s ease; box-shadow:var(--shadow-soft); pointer-events:none;}
+#toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width:920px){
+  .main-split{grid-template-columns:1fr;}
+  .sidebar{position:static; flex-direction:row; overflow-x:auto;}
+  .side-card{min-width:240px;}
+  .info-panels{grid-template-columns:1fr;}
+}
+@media (max-width:640px){
+  .search-box{display:none;}
+  .hero{padding:38px 0 30px;}
+  .hero-stats{gap:18px;}
+  .card{flex:0 0 168px;}
+  .card .thumb{height:104px; font-size:40px;}
+}
+</style>
+</head>
+<body data-theme="dark">
+
+<div id="splash"><div class="splash-logo">🎮 ArcadeNova</div><div class="spinner"></div></div>
+<div class="bg-fx"><div class="blob blob1"></div><div class="blob blob2"></div><div class="blob blob3"></div></div>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="logo"><span class="mark">🕹️</span><span class="grad-text">ArcadeNova</span></div>
+    <div class="search-box">
+      <span>🔍</span>
+      <input id="searchInput" type="text" placeholder="Search games... e.g. Snake, Puzzle">
+    </div>
+    <div class="nav-actions">
+      <button class="icon-btn" id="randomBtn" title="Random Game">🎲</button>
+      <button class="icon-btn" id="themeBtn" title="Dark/Light Mode">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <div class="hero-inner">
+      <span class="eyebrow">⚡ 100% Free · No Download</span>
+      <h1>Play Premium Games,<br><span>Right In Your Browser.</span></h1>
+      <p>10 handpicked games on ArcadeNova — from Puzzle to Reflex. Rack up scores, rate your favorites, and find your new obsession.</p>
+      <div class="hero-actions">
+        <button class="btn-primary" id="heroPlayBtn">▶️ Play Now</button>
+        <button class="btn-ghost" id="heroRandomBtn">🎲 Surprise Me</button>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><b>10</b><span>Premium Games</span></div>
+        <div class="hero-stat"><b>7</b><span>Categories</span></div>
+        <div class="hero-stat"><b id="totalPlaysStat">0</b><span>Total Plays</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><h2>🎮 Featured Games <small style="color:var(--muted); font-size:13px;">(Top 10)</small></h2><p>The best of the best, curated for you</p></div>
+    <div class="scroller" id="featuredScroller"></div>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><h2>🔥 Trending Games</h2><p>Highest rated this week</p></div>
+    <div class="scroller" id="trendingScroller"></div>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><h2>🆕 New Games</h2><p>Just added</p></div>
+    <div class="scroller" id="newScroller"></div>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><h2>⭐ Most Played</h2><p>Played the most by everyone</p></div>
+    <div class="scroller" id="mostPlayedScroller"></div>
+  </section>
+
+  <section class="section" id="recentSection" style="display:none;">
+    <div class="section-head"><h2>❤️ Recently Played</h2></div>
+    <div class="recent-strip" id="recentStrip"></div>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><h2>🏷️ All Games</h2><p id="resultCount">10 games</p></div>
+    <div class="main-split">
+      <div>
+        <div class="filter-bar" id="filterBar"></div>
+        <div class="grid" id="allGamesGrid"></div>
+      </div>
+      <aside class="sidebar">
+        <div class="side-card">
+          <h3>🏆 Popular Games</h3>
+          <div class="side-list" id="popularSide"></div>
+        </div>
+        <div class="side-card">
+          <h3>💡 Did you know?</h3>
+          <p style="font-size:13px; color:var(--muted); line-height:1.6;">Save your favorite games with the ❤️ icon — it stays right in your browser, we never send it anywhere.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap footer-inner">
+    <div class="logo"><span class="mark">🕹️</span><span class="grad-text">ArcadeNova</span></div>
+    <div>© 2026 ArcadeNova       
+                     𝐌𝐚𝐝𝐞 𝐛𝐲 𝐥𝐚𝐤𝐬𝐡𝐲 🫪💔</div>
+  <div> 𝗩𝗼 𝘀𝗮𝗯 𝘁𝗼𝗼 𝘁𝗵𝗶𝗸 𝗵𝗮𝗶 𝗯𝗵𝗮𝗶 𝗹𝗲𝗸𝗶𝗻 𝘃𝗼 𝘁𝘂𝗷𝗵𝗲 𝗰𝗵𝗵𝗼𝗱 𝗸𝗲 𝗸𝘆𝘂 𝗰𝗵𝗮𝗹𝗶 𝗴𝗮𝘆𝗶????😿🥀</div>
+  </div>
+</footer>
+
+<!-- ============ GAME OVERLAY ============ -->
+<div class="game-overlay" id="gameOverlay">
+  <div class="go-header">
+    <div class="go-title"><span id="goIcon">🎮</span><span id="goName">Game</span></div>
+    <div class="go-actions">
+      <button class="icon-btn" id="goFav" title="Favorite">🤍</button>
+      <button class="icon-btn" id="goShare" title="Share">🔗</button>
+      <button class="icon-btn" id="goFullscreen" title="Fullscreen">⛶</button>
+      <button class="icon-btn" id="goRestart" title="Restart">🔄</button>
+      <button class="icon-btn" id="goClose" title="Close">✖️</button>
+    </div>
+  </div>
+  <div class="go-body">
+    <div class="go-content">
+      <div class="game-stage-wrap">
+        <div class="hud" id="gameHud"></div>
+        <div id="gameStage"></div>
+      </div>
+      <div class="info-panels">
+        <div class="panel"><h4>📋 Description</h4><p id="goDesc">-</p></div>
+        <div class="panel"><h4>🎮 Controls</h4><p id="goControls">-</p></div>
+      </div>
+      <div class="similar-row">
+        <h4>💡 Similar Games</h4>
+        <div class="scroller" id="similarScroller"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+'use strict';
+/* =====================================================================
+   ArcadeNova — Premium Free Games Website (single file, no backend)
+   ===================================================================== */
+
+/* ---------- tiny localStorage helper ---------- */
+const LS = {
+  get(key, fallback){ try{ const v = localStorage.getItem(key); return v===null? fallback : JSON.parse(v); }catch(e){ return fallback; } },
+  set(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
+};
+
+/* ---------- game catalogue ---------- */
+const GAMES = [
+  { id:'snake', name:'Snake Classic', cat:'Arcade', icon:'🐍', grad:'linear-gradient(135deg,#2ecc71,#0d7a3d)', rating:4.6, plays:15400, isNew:false,
+    desc:'Classic snake game — khana khao, lamba bano, lekin khud se ya deewar se mat takrao.',
+    controls:'Use Arrow keys / WASD to change direction. Swipe on mobile. Eat food to grow longer.' },
+  { id:'g2048', name:'2048', cat:'Puzzle', icon:'🔢', grad:'linear-gradient(135deg,#f6c667,#c98a2b)', rating:4.8, plays:22300, isNew:false,
+    desc:'Slide the numbers and merge matching tiles to reach 2048.',
+    controls:'Use Arrow keys or swipe to slide tiles. Tiles with the same number merge together.' },
+  { id:'flappy', name:'Flappy Bird Style', cat:'Arcade', icon:'🐤', grad:'linear-gradient(135deg,#5ec8ff,#1a6fb8)', rating:4.3, plays:18700, isNew:false,
+    desc:'Tap to flap the bird and glide safely through the pipes.',
+    controls:'Tap / Click / Space makes the bird flap upward. Gravity pulls it back down.' },
+  { id:'ttt', name:'Tic Tac Toe Plus', cat:'Logic', icon:'⭕', grad:'linear-gradient(135deg,#b98cff,#6a3fc9)', rating:4.4, plays:9800, isNew:false,
+    desc:'Play against a smart AI — pick Easy or Hard mode and get three in a row.',
+    controls:'Tap any empty cell to place your mark. The AI takes its turn automatically.' },
+  { id:'memory', name:'Memory Cups', cat:'Party', icon:'🍥', grad:'linear-gradient(135deg,#ff9f7a,#d9522f)', rating:4.5, plays:8300, isNew:true,
+    desc:'Flip the cards to find matching pairs — match them all in as few moves as possible.',
+    controls:'Tap two cards to flip them. Matching cards stay revealed.' },
+  { id:'colorswitch', name:'Color Switch', cat:'Reflex', icon:'🎨', grad:'linear-gradient(135deg,#ff5da2,#7c3fc9)', rating:4.2, plays:12100, isNew:false,
+    desc:"The ball keeps changing color — pass through the matching color gate, or it's game over.",
+    controls:'Tap / Click / Space makes the ball jump. Its color must match the gate you pass through.' },
+  { id:'brick', name:'Brick Breaker', cat:'Arcade', icon:'🧱', grad:'linear-gradient(135deg,#7ee787,#1f8a3d)', rating:4.5, plays:16900, isNew:false,
+    desc:'Bounce the ball with your paddle and break every brick.',
+    controls:'Move the mouse or drag to control the paddle. Arrow keys also work.' },
+  { id:'stack', name:'Stack Tower', cat:'Reflex', icon:'🗼', grad:'linear-gradient(135deg,#ffd166,#e8890c)', rating:4.4, plays:11200, isNew:true,
+    desc:'Drop the moving block at the right moment and build a towering stack.',
+    controls:'Tap / Space to drop the block. The more precise you are, the better the overlap.' },
+  { id:'piano', name:'Simon Says', cat:'Music', icon:'🔴', grad:'linear-gradient(135deg,#2d2d3f,#000)', rating:4.6, plays:19500, isNew:true,
+    desc:'Watch the color sequence light up, then repeat it back — one wrong tap and it\'s over.',
+    controls:'Tap the color pads in the same order they lit up. The sequence grows longer every round.' },
+  { id:'bubble', name:'Bubble Shooter', cat:'Arcade', icon:'🫧', grad:'linear-gradient(135deg,#66d9ef,#2c7fb0)', rating:4.3, plays:14600, isNew:false,
+    desc:'Match 3 or more bubbles of the same color to pop them.',
+    controls:'Aim with mouse/touch, click/tap to shoot.' }
+];
+const byId = id => GAMES.find(g=>g.id===id);
+
+/* ---------- persisted state ---------- */
+let favorites = LS.get('an_favorites', []);
+let recent    = LS.get('an_recent', []);
+let counts    = LS.get('an_counts', {});
+let theme     = LS.get('an_theme', 'dark');
+
+document.documentElement.setAttribute('data-theme', theme);
+document.body.setAttribute('data-theme', theme);
+
+function fmtPlays(n){
+  if(n>=1000000) return (n/1000000).toFixed(1)+'M';
+  if(n>=1000) return (n/1000).toFixed(1)+'K';
+  return String(n);
+}
+function getPlays(g){ return g.plays + (counts[g.id]||0); }
+function stars(rating){
+  const full = Math.round(rating);
+  return '★★★★★'.slice(0,full) + '☆☆☆☆☆'.slice(0, 5-full) + ' <span style="color:var(--muted)">'+rating.toFixed(1)+'</span>';
+}
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toast._tm);
+  toast._tm = setTimeout(()=>t.classList.remove('show'), 2200);
+}
