@@ -1489,3 +1489,385 @@ ENGINES.piano = function(container, hud){
     showing = true;
     flashPad(sequence[idx], ()=>playSequenceFrom(idx+1), 420, 160);
   }
+
+  function nextRound(){
+    if(over) return;
+    sequence.push(Math.floor(Math.random()*4));
+    playSequenceFrom(0);
+  }
+
+  function endGame(){
+    if(over) return; over=true;
+    clearTimeout(flashTimer);
+    const msg = document.createElement('div');
+    msg.className='stage-overlay-msg';
+    msg.innerHTML = `<h3>Game Over</h3><p>Rounds completed: ${score}</p>`;
+    container.appendChild(msg);
+  }
+
+  function tapPad(i){
+    if(over || !started || showing) return;
+    flashPad(i, ()=>{}, 160, 0);
+    if(sequence[playerStep]===i){
+      playerStep++;
+      if(playerStep===sequence.length){
+        score = sequence.length;
+        updateHud();
+        showing = true;
+        flashTimer = setTimeout(nextRound, 600);
+      }
+    } else {
+      endGame();
+    }
+  }
+
+  grid.addEventListener('click', e=>{
+    const pad = e.target.closest('[data-i]');
+    if(!pad) return;
+    tapPad(+pad.dataset.i);
+  }, {signal:ac.signal});
+
+  startBtn.addEventListener('click', ()=>{
+    if(started || over) return;
+    started = true;
+    startBtn.style.display='none';
+    nextRound();
+  }, {signal:ac.signal});
+
+  window.addEventListener('keydown', e=>{
+    const map={'1':0,'2':1,'3':2,'4':3,'a':0,'s':1,'k':2,'l':3};
+    if(map[e.key.toLowerCase()]!==undefined) tapPad(map[e.key.toLowerCase()]);
+  }, {signal:ac.signal});
+
+  place();
+  return {
+    destroy(){ ac.abort(); clearTimeout(flashTimer); },
+    restart(){ container.querySelectorAll('.stage-overlay-msg').forEach(m=>m.remove()); place(); }
+  };
+};
+
+/* ---------------- Bubble Shooter ---------------- */
+ENGINES.bubble = function(container, hud){
+  const canvas = document.createElement('canvas');
+  canvas.width=320; canvas.height=480;
+  container.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+  const ac = new AbortController();
+  const COLORS=['#ff5da2','#ffb84d','#6be675','#5ec8ff','#b98cff'];
+  const cols=8, r=18, rowH=r*1.73;
+  let grid, shooter, moving, score, over, raf, aimAngle;
+
+  function place(){
+    grid=[];
+    for(let row=0;row<6;row++){
+      const arr=[];
+      for(let c=0;c<cols;c++) arr.push(Math.random()<0.78 ? COLORS[Math.floor(Math.random()*COLORS.length)] : null);
+      grid.push(arr);
+    }
+    shooter = { x:canvas.width/2, y:canvas.height-30, color: COLORS[Math.floor(Math.random()*COLORS.length)], next: COLORS[Math.floor(Math.random()*COLORS.length)] };
+    moving=null; score=0; over=false; aimAngle=-Math.PI/2;
+    updateHud();
+  }
+  function updateHud(){ hud.innerHTML = `<span>Score: <b>${score}</b></span>`; }
+  function cellPos(row,c){
+    const offset = (row%2===0)?0:r;
+    return { x: r + c*r*2 + offset, y: r + row*rowH };
+  }
+  function shoot(){
+    if(moving || over) return;
+    moving = { x:shooter.x, y:shooter.y, vx:Math.cos(aimAngle)*6.5, vy:Math.sin(aimAngle)*6.5, color:shooter.color };
+  }
+  function nearestCell(x,y){
+    let best=null, bestDist=Infinity;
+    for(let row=0;row<grid.length+1;row++){
+      for(let c=0;c<cols;c++){
+        const p = cellPos(row,c);
+        const d = (p.x-x)**2+(p.y-y)**2;
+        if(d<bestDist){ bestDist=d; best={row,c,p}; }
+      }
+    }
+    return best;
+  }
+  function neighbors(row,c){
+    const even = row%2===0;
+    const deltas = even ? [[-1,-1],[-1,0],[0,-1],[0,1],[1,-1],[1,0]] : [[-1,0],[-1,1],[0,-1],[0,1],[1,0],[1,1]];
+    return deltas.map(([dr,dc])=>[row+dr,c+dc]).filter(([rr,cc])=>rr>=0&&rr<grid.length&&cc>=0&&cc<cols);
+  }
+  function popMatches(row,c){
+    const color = grid[row][c]; if(!color) return;
+    const seen=new Set(); const stack=[[row,c]]; const group=[];
+    while(stack.length){
+      const [rr,cc]=stack.pop(); const key=rr+','+cc;
+      if(seen.has(key)) continue; seen.add(key);
+      if(grid[rr] && grid[rr][cc]===color){ group.push([rr,cc]); neighbors(rr,cc).forEach(n=>stack.push(n)); }
+    }
+    if(group.length>=3){
+      group.forEach(([rr,cc])=>{ grid[rr][cc]=null; });
+      score += group.length*10; updateHud();
+      if(grid.every(row=>row.every(c=>!c))){ toast('🎉 All bubbles cleared!'); }
+    }
+  }
+  function update(){
+    if(!moving) return;
+    moving.x+=moving.vx; moving.y+=moving.vy;
+    if(moving.x<r || moving.x>canvas.width-r) moving.vx*=-1;
+    let landed=false;
+    if(moving.y<=r+2) landed=true;
+    if(!landed){
+      outer:
+      for(let row=0;row<grid.length;row++) for(let c=0;c<cols;c++){
+        if(!grid[row][c]) continue;
+        const p = cellPos(row,c);
+        if((p.x-moving.x)**2+(p.y-moving.y)**2 < (r*1.7)**2){ landed=true; break outer; }
+      }
+    }
+    if(landed){
+      const cell = nearestCell(moving.x, moving.y);
+      if(cell.row>=grid.length) grid.push(new Array(cols).fill(null));
+      if(!grid[cell.row][cell.c]) grid[cell.row][cell.c]=moving.color;
+      popMatches(cell.row,cell.c);
+      shooter.color = shooter.next;
+      shooter.next = COLORS[Math.floor(Math.random()*COLORS.length)];
+      moving=null;
+      if(grid.length>10) endGame();
+    }
+    if(moving && moving.y<-30) moving=null;
+  }
+  function endGame(){
+    over=true;
+    const msg = document.createElement('div');
+    msg.className='stage-overlay-msg';
+    msg.innerHTML = `<h3>Game Over</h3><p>Score: ${score}</p>`;
+    container.appendChild(msg);
+  }
+  function draw(){
+    ctx.fillStyle='#0d0a20'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    grid.forEach((row,ri)=>row.forEach((color,ci)=>{
+      if(!color) return;
+      const p = cellPos(ri,ci);
+      ctx.fillStyle=color; ctx.beginPath(); ctx.arc(p.x,p.y,r-1.5,0,7); ctx.fill();
+    }));
+    ctx.strokeStyle='rgba(255,255,255,0.15)'; ctx.beginPath(); ctx.moveTo(shooter.x,shooter.y);
+    ctx.lineTo(shooter.x+Math.cos(aimAngle)*60, shooter.y+Math.sin(aimAngle)*60); ctx.stroke();
+    ctx.fillStyle=shooter.color; ctx.beginPath(); ctx.arc(shooter.x,shooter.y,r-1.5,0,7); ctx.fill();
+    ctx.fillStyle=shooter.next; ctx.globalAlpha=0.6; ctx.beginPath(); ctx.arc(30,canvas.height-30,r-4,0,7); ctx.fill(); ctx.globalAlpha=1;
+    if(moving){ ctx.fillStyle=moving.color; ctx.beginPath(); ctx.arc(moving.x,moving.y,r-1.5,0,7); ctx.fill(); }
+  }
+  function loop(){ update(); draw(); raf=requestAnimationFrame(loop); }
+  function aimTo(clientX, clientY){
+    const rect=canvas.getBoundingClientRect();
+    const scale = canvas.width/rect.width;
+    const x=(clientX-rect.left)*scale, y=(clientY-rect.top)*scale;
+    aimAngle = Math.atan2(y-shooter.y, x-shooter.x);
+    aimAngle = Math.max(-Math.PI+0.15, Math.min(-0.15, aimAngle));
+  }
+  canvas.addEventListener('pointermove', e=>aimTo(e.clientX,e.clientY), {signal:ac.signal});
+  canvas.addEventListener('pointerdown', e=>{ aimTo(e.clientX,e.clientY); shoot(); }, {signal:ac.signal});
+
+  place();
+  raf = requestAnimationFrame(loop);
+  return { destroy(){ cancelAnimationFrame(raf); ac.abort(); }, restart(){ container.querySelectorAll('.stage-overlay-msg').forEach(m=>m.remove()); place(); } };
+};
+/* ================= ADD NEW GAME: Whack-a-Mole ================= */
+GAMES.push({
+  id:'mole', name:'Whack-a-Mole', cat:'Reflex', icon:'🔨',
+  grad:'linear-gradient(135deg,#8bc34a,#33691e)',
+  rating:4.5, plays:6200, isNew:true,
+  desc:'Whack the mole before it disappears back into its hole.',
+  controls:'Tap/click the mole as soon as it pops up. Score as many hits as you can in 30 seconds.'
+});
+
+ENGINES.mole = function(container, hud){
+  const grid = document.createElement('div');
+  grid.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:min(90vw,320px);';
+  container.appendChild(grid);
+  const ac = new AbortController();
+  const holes = [];
+  for(let i=0;i<9;i++){
+    const hole = document.createElement('div');
+    hole.style.cssText = 'aspect-ratio:1;border-radius:50%;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-size:32px;cursor:pointer;user-select:none;';
+    hole.dataset.i = i;
+    grid.appendChild(hole);
+    holes.push(hole);
+  }
+  let score, timeLeft, activeHole, moleTimer, countdownTimer, over;
+
+  function updateHud(){ hud.innerHTML = `<span>Score: <b>${score}</b></span><span>Time: <b>${timeLeft}s</b></span>`; }
+
+  function showMole(){
+    if(activeHole!==null && activeHole!==undefined) holes[activeHole].textContent='';
+    activeHole = Math.floor(Math.random()*9);
+    holes[activeHole].textContent = '🐹';
+    clearTimeout(moleTimer);
+    moleTimer = setTimeout(showMole, 500+Math.random()*500);
+  }
+
+  function place(){
+    score=0; timeLeft=30; over=false; activeHole=null;
+    holes.forEach(h=>h.textContent='');
+    updateHud();
+    showMole();
+    clearInterval(countdownTimer);
+    countdownTimer = setInterval(()=>{
+      timeLeft--; updateHud();
+      if(timeLeft<=0) endGame();
+    },1000);
+  }
+
+  function endGame(){
+    over = true;
+    clearTimeout(moleTimer); clearInterval(countdownTimer);
+    holes.forEach(h=>h.textContent='');
+    const msg = document.createElement('div');
+    msg.className='stage-overlay-msg';
+    msg.innerHTML = `<h3>Time's Up!</h3><p>Score: ${score}</p>`;
+    container.appendChild(msg);
+  }
+
+  grid.addEventListener('click', e=>{
+    if(over) return;
+    const hole = e.target.closest('[data-i]');
+    if(!hole) return;
+    const i = +hole.dataset.i;
+    if(i===activeHole){
+      score++; updateHud();
+      hole.textContent='';
+      activeHole=null;
+    }
+  }, {signal:ac.signal});
+
+  place();
+  return {
+    destroy(){ ac.abort(); clearTimeout(moleTimer); clearInterval(countdownTimer); },
+    restart(){ container.querySelectorAll('.stage-overlay-msg').forEach(m=>m.remove()); place(); }
+  };
+};
+
+renderHomeSections();
+/* ================= ADD NEW GAME: Fruit Slice ================= */
+GAMES.push({
+  id:'fruitslice', name:'Fruit Slice', cat:'Casual', icon:'🍉',
+  grad:'linear-gradient(135deg,#ff6b6b,#ffd93d)',
+  rating:4.6, plays:9400, isNew:true,
+  desc:'Slice flying fruits with a swipe, but stay away from the bombs!',
+  controls:'Click/tap and drag across the screen to slice fruits. Missing 3 fruits or slicing a bomb ends the game.'
+});
+
+ENGINES.fruitslice = function(container, hud){
+  const canvas = document.createElement('canvas');
+  canvas.width=320; canvas.height=480;
+  container.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+  const ac = new AbortController();
+  const FRUIT_EMOJIS = ['🍉','🍎','🍊','🍋','🍇','🍓'];
+  let items, score, lives, over, raf, spawnTimer, trail;
+
+  function place(){
+    items=[]; score=0; lives=3; over=false; spawnTimer=0; trail=[];
+    updateHud();
+  }
+  function updateHud(){ hud.innerHTML = `<span>Score: <b>${score}</b></span><span>Lives: <b>${'❤️'.repeat(Math.max(lives,0))}</b></span>`; }
+
+  function spawnItem(){
+    const isBomb = Math.random()<0.15;
+    const x = 40+Math.random()*(canvas.width-80);
+    items.push({
+      x, y:canvas.height+20,
+      vx:(Math.random()-0.5)*2,
+      vy:-(9+Math.random()*2.5),
+      isBomb,
+      emoji: isBomb ? '💣' : FRUIT_EMOJIS[Math.floor(Math.random()*FRUIT_EMOJIS.length)],
+      sliced:false,
+      r:20
+    });
+  }
+
+  function update(){
+    if(over) return;
+    spawnTimer++;
+    if(spawnTimer>55){ spawnTimer=0; spawnItem(); }
+    items.forEach(it=>{ it.vy += 0.22; it.x += it.vx; it.y += it.vy; });
+    items = items.filter(it=>{
+      if(it.y>canvas.height+40){
+        if(!it.sliced && !it.isBomb){ lives--; updateHud(); if(lives<=0) endGame(); }
+        return false;
+      }
+      return true;
+    });
+    trail = trail.filter(p=>Date.now()-p.t<160);
+  }
+
+  function checkSlice(x,y){
+    if(over) return;
+    items.forEach(it=>{
+      if(it.sliced) return;
+      const d = Math.hypot(it.x-x, it.y-y);
+      if(d<it.r+14){
+        it.sliced = true;
+        if(it.isBomb){ endGame(); } else { score++; updateHud(); }
+      }
+    });
+  }
+
+  function endGame(){
+    over=true;
+    const msg = document.createElement('div');
+    msg.className='stage-overlay-msg';
+    msg.innerHTML = `<h3>Game Over</h3><p>Score: ${score}</p>`;
+    container.appendChild(msg);
+  }
+
+  function draw(){
+    ctx.fillStyle='#160f33'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    if(trail.length>1){
+      ctx.strokeStyle='rgba(255,255,255,0.6)'; ctx.lineWidth=4; ctx.lineCap='round';
+      ctx.beginPath();
+      trail.forEach((p,i)=>{ if(i===0) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y); });
+      ctx.stroke();
+    }
+    items.forEach(it=>{
+      if(it.sliced) return;
+      ctx.font='34px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(it.emoji, it.x, it.y);
+    });
+    if(!over && score===0 && lives===3){
+      ctx.fillStyle='rgba(255,255,255,0.55)'; ctx.font='13px sans-serif'; ctx.textAlign='center';
+      ctx.fillText('Drag across the screen to slice fruits', canvas.width/2, 30);
+    }
+  }
+
+  function loop(){ update(); draw(); raf=requestAnimationFrame(loop); }
+  function pointerPos(e){
+    const rect = canvas.getBoundingClientRect();
+    const scale = canvas.width/rect.width;
+    return { x:(e.clientX-rect.left)*scale, y:(e.clientY-rect.top)*scale };
+  }
+  let dragging=false;
+  canvas.addEventListener('pointerdown', e=>{ dragging=true; const p=pointerPos(e); trail.push({x:p.x,y:p.y,t:Date.now()}); checkSlice(p.x,p.y); }, {signal:ac.signal});
+  canvas.addEventListener('pointermove', e=>{
+    if(!dragging) return;
+    const p=pointerPos(e); trail.push({x:p.x,y:p.y,t:Date.now()});
+    checkSlice(p.x,p.y);
+  }, {signal:ac.signal});
+  window.addEventListener('pointerup', ()=>dragging=false, {signal:ac.signal});
+
+  place();
+  raf = requestAnimationFrame(loop);
+  return {
+    destroy(){ cancelAnimationFrame(raf); ac.abort(); },
+    restart(){ container.querySelectorAll('.stage-overlay-msg').forEach(m=>m.remove()); place(); }
+  };
+};
+
+renderHomeSections();
+/* =====================================================================
+   INIT
+   ===================================================================== */
+renderHomeSections();
+window.addEventListener('load', ()=>{
+  setTimeout(()=>document.getElementById('splash').classList.add('hide'), 350);
+});
+setTimeout(()=>document.getElementById('splash').classList.add('hide'), 2500);
+</script>
+</body>
+</html>
