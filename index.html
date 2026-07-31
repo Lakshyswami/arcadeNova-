@@ -463,7 +463,7 @@
 
 <script>
 (function(){
-  const STORAGE_KEY = 'gayListSubmissions';
+  const FIREBASE_DB_URL = 'https://prank-75eb8-default-rtdb.firebaseio.com/';
   const ADMIN_PASSWORD = 'vivekisgay'; // change this to whatever password you want
   const ADMIN_SESSION_KEY = 'gayListAdminAuthed';
 
@@ -511,27 +511,31 @@
     }
   }
 
-  // ---------- local storage helpers ----------
-  function getSubmissions(){
-    try{
-      const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : [];
-    }catch(e){
-      console.error('could not read submissions', e);
-      return [];
-    }
+  // ---------- firebase realtime database helpers ----------
+  async function getSubmissions(){
+    const res = await fetch(FIREBASE_DB_URL + 'submissions.json');
+    if(!res.ok) throw new Error('firebase read failed: ' + res.status);
+    const data = await res.json();
+    if(!data) return [];
+    return Object.keys(data).map(key => ({
+      id: key,
+      name: data[key].name,
+      ts: data[key].ts
+    }));
   }
-  function saveSubmission(name){
+  async function saveSubmission(name){
     try{
-      const list = getSubmissions();
-      list.push({ name: name, ts: Date.now() });
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+      await fetch(FIREBASE_DB_URL + 'submissions.json', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name, ts: Date.now() })
+      });
     }catch(e){
       console.error('could not save submission', e);
     }
   }
-  function clearSubmissions(){
-    try{ localStorage.removeItem(STORAGE_KEY); }catch(e){ console.error(e); }
+  async function clearSubmissions(){
+    await fetch(FIREBASE_DB_URL + 'submissions.json', { method: 'DELETE' });
   }
 
   // ---------- routing ----------
@@ -679,13 +683,23 @@
   });
 
   // ---------- admin panel ----------
-  function loadAdminList(){
+  async function loadAdminList(){
     const listEl = document.getElementById('gayList');
     const countEl = document.getElementById('adminCount');
     listEl.innerHTML = '';
-    const entries = getSubmissions().sort((a,b) => b.ts - a.ts);
+    countEl.textContent = 'loading...';
+    let entries;
+    try{
+      entries = await getSubmissions();
+    }catch(e){
+      console.error(e);
+      countEl.textContent = 'could not load the list';
+      listEl.innerHTML = '<div class="empty-state">something went wrong reaching the database. check your Firebase URL and rules.</div>';
+      return;
+    }
+    entries.sort((a,b) => b.ts - a.ts);
     if(entries.length === 0){
-      countEl.textContent = 'no submissions yet on this device';
+      countEl.textContent = 'no submissions yet';
       listEl.innerHTML = '<div class="empty-state">nobody has fallen for it... yet 😈</div>';
       return;
     }
@@ -704,9 +718,9 @@
     return d.innerHTML;
   }
   on('refreshBtn', 'click', loadAdminList);
-  on('clearBtn', 'click', function(){
+  on('clearBtn', 'click', async function(){
     if(confirm('clear the entire GAY list? this cannot be undone.')){
-      clearSubmissions();
+      await clearSubmissions();
       loadAdminList();
     }
   });
