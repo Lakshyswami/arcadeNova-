@@ -2,446 +2,528 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Aura Calculator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎉 You've Won!</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Poppins:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#0b0518;
-    --panel:rgba(255,255,255,.05);
-    --line:rgba(255,255,255,.12);
-    --text:#f3ecff;
-    --muted:#b8a8d9;
-    --p1:#a855f7;
-    --p2:#ec4899;
-    --p3:#6366f1;
+    --teal:#0F3D3E;
+    --teal-deep:#0A2B2C;
+    --gold:#F2C14E;
+    --orange:#F25C05;
+    --cream:#FEFAE0;
+    --glitch-bg:#0D0208;
+    --glitch-green:#39FF14;
+    --glitch-red:#FF003C;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   html,body{
     height:100%;
-    background:var(--bg);
-    color:var(--text);
-    font-family:'Poppins',system-ui,sans-serif;
-    overflow-x:hidden;
-  }
-  canvas#bg{
-    position:fixed;inset:0;
-    z-index:0;
-  }
-  .wrap{
-    position:relative;z-index:1;
-    min-height:100vh;
+    overflow:hidden;
+    font-family:'Poppins',sans-serif;
+    background:var(--teal);
+    background-image:
+      radial-gradient(circle at 15% 20%, rgba(242,193,78,0.15), transparent 40%),
+      radial-gradient(circle at 85% 80%, rgba(242,92,5,0.15), transparent 40%);
     display:flex;
     align-items:center;
     justify-content:center;
-    padding:6vw 5vw;
+    position:relative;
   }
-  .card{
-    width:100%;
-    max-width:440px;
-    background:var(--panel);
-    border:1px solid var(--line);
-    backdrop-filter:blur(18px);
-    -webkit-backdrop-filter:blur(18px);
-    border-radius:22px;
-    padding:2.4rem 2rem;
+
+  /* ---------- CONFETTI BG ---------- */
+  #confetti-layer{position:fixed;inset:0;pointer-events:none;z-index:1;}
+  .confetti-piece{
+    position:absolute;top:-20px;
+    width:8px;height:14px;border-radius:2px;
+    opacity:0.85;
+    animation:fall linear infinite;
+  }
+  @keyframes fall{
+    to{ transform:translateY(110vh) rotate(360deg); }
+  }
+
+  /* ---------- CLAIM CARD ---------- */
+  #claim-card{
+    position:relative;z-index:2;
+    background:var(--cream);
+    border-radius:24px;
+    padding:44px 40px 36px;
+    max-width:420px;
+    width:90%;
     text-align:center;
-    box-shadow:0 30px 80px -30px rgba(168,85,247,.35);
+    box-shadow:0 30px 60px rgba(0,0,0,0.35), 0 0 0 6px rgba(242,193,78,0.35);
+    transform:scale(1);
+    transition:transform .3s ease, opacity .3s ease;
+  }
+  #claim-card.hide{ transform:scale(0.85); opacity:0; pointer-events:none; }
+
+  .badge{
+    display:inline-block;
+    background:var(--orange);
+    color:var(--cream);
+    font-family:'Space Mono',monospace;
+    font-size:12px;
+    letter-spacing:1px;
+    padding:6px 14px;
+    border-radius:20px;
+    margin-bottom:16px;
+    text-transform:uppercase;
   }
   h1{
-    font-size:1.6rem;
-    letter-spacing:.02em;
-    background:linear-gradient(120deg,var(--p1),var(--p2),var(--p3));
-    -webkit-background-clip:text;
-    background-clip:text;
-    color:transparent;
-    margin-bottom:.4rem;
+    font-family:'Baloo 2',sans-serif;
+    font-size:30px;
+    color:var(--teal-deep);
+    line-height:1.25;
+    margin-bottom:10px;
   }
-  .sub{
-    font-size:.8rem;
-    color:var(--muted);
-    margin-bottom:2rem;
-    letter-spacing:.04em;
-  }
-  .field{
-    text-align:left;
-    margin-bottom:1.1rem;
-  }
-  .field label{
-    display:block;
-    font-size:.7rem;
-    text-transform:uppercase;
-    letter-spacing:.12em;
-    color:var(--muted);
-    margin-bottom:.4rem;
-  }
-  .field input{
-    width:100%;
-    background:rgba(255,255,255,.06);
-    border:1px solid var(--line);
-    border-radius:10px;
-    padding:.85rem 1rem;
-    color:var(--text);
-    font-size:1rem;
-    font-family:inherit;
-    outline:none;
-    transition:border-color .25s, background .25s;
-  }
-  .field input:focus{
-    border-color:var(--p1);
-    background:rgba(255,255,255,.09);
-  }
-  .field .hint{
-    font-size:.68rem;
-    color:var(--muted);
-    opacity:.6;
-    margin-top:.3rem;
-  }
-  button{
-    width:100%;
-    font-family:inherit;
-    font-size:.9rem;
-    font-weight:600;
-    letter-spacing:.05em;
-    color:#fff;
-    background:linear-gradient(120deg,var(--p1),var(--p2));
-    border:none;
-    border-radius:12px;
-    padding:1rem;
-    cursor:pointer;
-    margin-top:.6rem;
-    transition:transform .2s, box-shadow .2s;
-  }
-  button:active{transform:scale(.97);}
-  button:hover{box-shadow:0 12px 30px -8px rgba(236,72,153,.55);}
-
-  .result{display:none;}
-  .result.show{display:block;}
-  .warning{
-    display:none;
-    align-items:center;
-    justify-content:center;
-    gap:.6rem;
-    font-size:.78rem;
-    font-weight:600;
-    letter-spacing:.06em;
-    text-transform:uppercase;
-    color:#ffdede;
-    background:rgba(255,40,40,.08);
-    border:1px solid rgba(255,80,80,.5);
-    border-radius:12px;
-    padding:.75rem 1rem;
-    margin-bottom:1.4rem;
-    backdrop-filter:blur(10px);
-    -webkit-backdrop-filter:blur(10px);
-  }
-  .warning svg{
-    width:18px;height:18px;
-    flex-shrink:0;
-    animation:iconPulse 1s ease-in-out infinite;
-  }
-  .result.infinite .warning{
-    display:flex;
-    animation:warnGlow 1.4s ease-in-out infinite;
-  }
-  @keyframes warnGlow{
-    0%,100%{
-      box-shadow:0 0 0 rgba(255,60,60,0);
-      border-color:rgba(255,80,80,.4);
-    }
-    50%{
-      box-shadow:0 0 22px rgba(255,60,60,.45);
-      border-color:rgba(255,120,120,.9);
-    }
-  }
-  @keyframes iconPulse{
-    0%,100%{ opacity:1; transform:scale(1); }
-    50%{ opacity:.6; transform:scale(1.12); }
-  }
-
-  .result .ring{
-    width:190px;height:190px;
-    margin:0 auto 1.4rem;
-    border-radius:50%;
-    display:flex;align-items:center;justify-content:center;
-    background:conic-gradient(from 0deg, var(--p1), var(--p2), var(--p3), var(--p1));
-    position:relative;
-    animation:spin 6s linear infinite;
-  }
-  .result .ring::before{
-    content:'';
-    position:absolute;inset:8px;
-    background:var(--bg);
-    border-radius:50%;
-  }
-  .result .ring .num{
-    position:relative;z-index:2;
-    font-size:2.2rem;
+  h1 span{ color:var(--orange); }
+  .amount{
+    font-family:'Baloo 2',sans-serif;
+    font-size:52px;
     font-weight:800;
-    animation:none;
-    font-variant-numeric:tabular-nums;
+    color:var(--teal-deep);
+    margin:14px 0 6px;
   }
-  @keyframes spin{to{transform:rotate(360deg);}}
-
-  .result .name-line{
-    font-size:.95rem;
-    color:var(--muted);
-    margin-bottom:.3rem;
+  .amount sup{ font-size:24px; vertical-align:top; top:8px; position:relative; }
+  p.sub{
+    color:#4a5c4e;
+    font-size:14.5px;
+    margin-bottom:26px;
+    line-height:1.5;
   }
-  .result .aura-label{
-    font-size:.7rem;
-    text-transform:uppercase;
-    letter-spacing:.18em;
-    color:var(--muted);
-    margin-bottom:1.5rem;
-  }
-  .result .message{
-    font-size:1.05rem;
-    line-height:1.6;
-    padding:1rem 1.2rem;
-    background:rgba(255,255,255,.05);
-    border:1px solid var(--line);
-    border-radius:14px;
-    margin-bottom:1.6rem;
-  }
-  .result.infinite .ring{
-    animation:spin 1.4s linear infinite, shake .35s ease-in-out infinite;
-    background:conic-gradient(from 0deg,#ff9933,#ffffff,#138808,#ff9933);
-  }
-  @keyframes shake{
-    0%,100%{transform:translateX(0) rotate(0);}
-    25%{transform:translateX(-3px) rotate(-1deg);}
-    75%{transform:translateX(3px) rotate(1deg);}
-  }
-  .result.infinite .num{
+  #claim-btn{
+    background:var(--orange);
     color:#fff;
-    text-shadow:0 0 18px #ff9933, 0 0 30px #138808;
+    border:none;
+    font-family:'Baloo 2',sans-serif;
+    font-size:19px;
+    font-weight:700;
+    padding:16px 20px;
+    width:100%;
+    border-radius:14px;
+    cursor:pointer;
+    box-shadow:0 10px 0 #B84203, 0 14px 20px rgba(0,0,0,0.25);
+    transition:transform .08s ease;
   }
-  .result.infinite .message{
-    border-color:#ff9933;
-    animation:flash 1s infinite;
-  }
-  @keyframes flash{
-    0%,100%{background:rgba(255,153,51,.08);}
-    50%{background:rgba(19,136,8,.12);}
+  #claim-btn:active{ transform:translateY(6px); box-shadow:0 4px 0 #B84203; }
+  .fine-print{
+    margin-top:16px;
+    font-size:11px;
+    color:#7a8a7d;
+    font-family:'Space Mono',monospace;
   }
 
-  .reset{
-    background:transparent;
-    border:1px solid var(--line);
-    color:var(--muted);
-    font-weight:500;
+  /* ---------- FULLSCREEN OVERLAY LAYERS ---------- */
+  #chaos-layer{
+    position:fixed;inset:0;
+    z-index:50;
+    display:none;
+    background:var(--teal-deep);
+    align-items:center;justify-content:center;
+    text-align:center;
+    overflow:hidden;
+  }
+  #chaos-layer.active{ display:flex; }
+
+  .spinner{
+    width:54px;height:54px;
+    border:5px solid rgba(255,255,255,0.15);
+    border-top-color:var(--gold);
+    border-radius:50%;
+    animation:spin 0.8s linear infinite;
+    margin:0 auto 22px;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  .chaos-text{
+    font-family:'Baloo 2',sans-serif;
+    color:var(--cream);
+    font-size:20px;
+    letter-spacing:0.5px;
+  }
+
+  /* glitch flash */
+  #glitch-flash{
+    position:fixed;inset:0;z-index:60;
+    background:var(--glitch-red);
+    display:none;
+    mix-blend-mode:screen;
+  }
+
+  #glitch-text{
+    position:fixed;z-index:61;
+    top:50%;left:50%;
+    transform:translate(-50%,-50%);
+    font-family:'Space Mono',monospace;
+    font-weight:700;
+    font-size:15vw;
+    color:var(--glitch-red);
+    text-shadow:4px 0 var(--glitch-green), -4px 0 cyan;
+    display:none;
+    letter-spacing:4px;
+  }
+
+  /* terminal */
+  #terminal{
+    position:fixed;inset:0;z-index:55;
+    background:var(--glitch-bg);
+    color:var(--glitch-green);
+    font-family:'Space Mono',monospace;
+    font-size:14px;
+    padding:30px;
+    display:none;
+    overflow:hidden;
+    line-height:1.8;
+  }
+  #terminal .line{ opacity:0; animation:appear .05s forwards; white-space:pre; }
+  @keyframes appear{ to{ opacity:1; } }
+  #term-progress-wrap{
+    margin-top:20px;
+    border:1px solid var(--glitch-green);
+    height:22px;
+    width:100%;
+    max-width:500px;
+  }
+  #term-progress-bar{
+    height:100%;
+    background:var(--glitch-green);
+    width:0%;
+    transition:width .2s ease;
+  }
+
+  /* camera flash */
+  #cam-flash{
+    position:fixed;inset:0;z-index:70;
+    background:#fff;
+    display:none;
+  }
+  #cam-caption{
+    position:fixed;z-index:71;
+    top:20px;left:50%;transform:translateX(-50%);
+    font-family:'Baloo 2',sans-serif;
+    font-size:20px;
+    background:rgba(0,0,0,0.6);
+    color:#fff;
+    padding:10px 22px;
+    border-radius:30px;
+    display:none;
+  }
+
+  /* dodge button screen */
+  #dodge-screen{
+    position:fixed;inset:0;z-index:56;
+    background:var(--glitch-bg);
+    display:none;
+    align-items:center;justify-content:center;
+    flex-direction:column;
+  }
+  #dodge-title{
+    color:var(--cream);
+    font-family:'Baloo 2',sans-serif;
+    font-size:22px;
+    margin-bottom:40px;
+    text-align:center;
+    padding:0 20px;
+  }
+  #dodge-btn{
+    position:absolute;
+    background:var(--glitch-red);
+    color:#fff;
+    border:none;
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:16px;
+    padding:14px 26px;
+    border-radius:12px;
+    cursor:pointer;
+    transition:top .18s ease, left .18s ease;
+  }
+
+  /* final endless limbo state */
+  #limbo{
+    position:fixed;inset:0;z-index:80;
+    background:var(--glitch-bg);
+    display:none;
+    align-items:center;justify-content:center;
+    flex-direction:column;
+    text-align:center;
+  }
+  #limbo .spinner{ border-top-color:var(--glitch-green); }
+  #limbo-msg{
+    font-family:'Space Mono',monospace;
+    color:var(--glitch-green);
+    font-size:15px;
+    margin-top:18px;
+    min-height:20px;
+  }
+
+  .shake{ animation:shake .4s ease; }
+  @keyframes shake{
+    0%,100%{ transform:translate(0,0); }
+    20%{ transform:translate(-10px,6px) rotate(-1deg); }
+    40%{ transform:translate(8px,-8px) rotate(1deg); }
+    60%{ transform:translate(-6px,10px) rotate(-1deg); }
+    80%{ transform:translate(10px,-4px) rotate(1deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; }
   }
 </style>
 </head>
 <body>
 
-<canvas id="bg"></canvas>
+<div id="confetti-layer"></div>
 
-<div class="wrap">
-  <div class="card">
+<div id="claim-card">
+  <span class="badge">Lucky Winner 🎊</span>
+  <h1>Congratulations! Your number has been <span>selected</span></h1>
+  <div class="amount"><sup>₹</sup>5,000</div>
+  <p class="sub">Press the button to transfer your cashback reward to your wallet. You're the only one seeing this offer.</p>
+  <button id="claim-btn">Claim Now 🎁</button>
+  <div class="fine-print">*Verification required · one-time process</div>
+</div>
 
-    <div id="inputScreen">
-      <h1>✨ Aura Calculator</h1>
-      <p class="sub">Enter your name and find out your true aura</p>
-
-      <div class="field">
-        <label for="nameInput">Your Name</label>
-        <input type="text" id="nameInput" placeholder="e.g. Rohan" autocomplete="off">
-      </div>
-
-      <div class="field">
-        <label for="ageInput">Age (optional)</label>
-        <input type="number" id="ageInput" placeholder="e.g. 21" min="0" max="120">
-        <div class="hint">Leave blank if you don't want to share</div>
-      </div>
-
-      <button id="calcBtn">Calculate My Aura</button>
-    </div>
-
-    <div id="resultScreen" class="result">
-      <div class="warning" id="warningSign">⚠️ WARNING: AURA OVERLOAD DETECTED ⚠️</div>
-      <div class="ring"><div class="num" id="auraNum">0</div></div>
-      <div class="name-line" id="nameLine"></div>
-      <div class="aura-label" id="auraLabel">AURA POINTS</div>
-      <div class="message" id="messageBox"></div>
-      <button class="reset" id="resetBtn">Calculate Again</button>
-    </div>
-
+<!-- chaos step 1: verifying -->
+<div id="chaos-layer">
+  <div>
+    <div class="spinner"></div>
+    <div class="chaos-text" id="chaos-text">Verifying claim...</div>
   </div>
 </div>
 
-<audio id="voiceMsg" src="modi-ji-bhojyam.mp3" loop></audio>
+<div id="glitch-flash"></div>
+<div id="glitch-text">ERROR</div>
+
+<div id="terminal">
+  <div id="term-lines"></div>
+  <div id="term-progress-wrap"><div id="term-progress-bar"></div></div>
+</div>
+
+<div id="cam-flash"></div>
+<div id="cam-caption">📸 Smile!</div>
+
+<div id="dodge-screen">
+  <div id="dodge-title">Want to stop? Catch the button first 👀</div>
+  <button id="dodge-btn">Cancel</button>
+</div>
+
+<div id="limbo">
+  <div class="spinner"></div>
+  <div id="limbo-msg">Please hold on...</div>
+</div>
 
 <script>
-/* ---------------- background floating particles ---------------- */
-const bgCanvas = document.getElementById('bg');
-const bgCtx = bgCanvas.getContext('2d');
-function resizeBg(){ bgCanvas.width = innerWidth; bgCanvas.height = innerHeight; }
-window.addEventListener('resize', resizeBg); resizeBg();
+// ---------- confetti ----------
+const colors = ['#F2C14E','#F25C05','#0F3D3E','#FEFAE0','#39FF14'];
+const confettiLayer = document.getElementById('confetti-layer');
+for(let i=0;i<50;i++){
+  const p = document.createElement('div');
+  p.className='confetti-piece';
+  p.style.left = Math.random()*100+'vw';
+  p.style.background = colors[Math.floor(Math.random()*colors.length)];
+  p.style.animationDuration = (4+Math.random()*4)+'s';
+  p.style.animationDelay = (Math.random()*5)+'s';
+  confettiLayer.appendChild(p);
+}
 
-let particles = Array.from({length:45}, () => ({
-  x: Math.random()*innerWidth,
-  y: Math.random()*innerHeight,
-  r: Math.random()*2+0.6,
-  vx: (Math.random()-0.5)*0.25,
-  vy: (Math.random()-0.5)*0.25,
-  hue: 260 + Math.random()*80
-}));
-function drawBg(){
-  bgCtx.fillStyle = '#0b0518';
-  bgCtx.fillRect(0,0,bgCanvas.width,bgCanvas.height);
-  for(const p of particles){
-    p.x += p.vx; p.y += p.vy;
-    if(p.x<0) p.x=innerWidth; if(p.x>innerWidth) p.x=0;
-    if(p.y<0) p.y=innerHeight; if(p.y>innerHeight) p.y=0;
-    bgCtx.beginPath();
-    bgCtx.arc(p.x,p.y,p.r,0,Math.PI*2);
-    bgCtx.fillStyle = `hsla(${p.hue},90%,70%,0.55)`;
-    bgCtx.shadowBlur = 8;
-    bgCtx.shadowColor = `hsla(${p.hue},90%,70%,0.8)`;
-    bgCtx.fill();
+// ---------- audio (generated, no external files) ----------
+let actx;
+function ac(){ if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)(); return actx; }
+
+function beep(freq, dur, type='sine', vol=0.25, delay=0){
+  const ctx = ac();
+  const t0 = ctx.currentTime + delay;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, t0);
+  gain.gain.setValueAtTime(vol, t0);
+  gain.gain.exponentialRampToValueAtTime(0.001, t0+dur);
+  osc.connect(gain).connect(ctx.destination);
+  osc.start(t0);
+  osc.stop(t0+dur);
+}
+
+function noiseBurst(dur, vol=0.3, delay=0){
+  const ctx = ac();
+  const bufferSize = ctx.sampleRate * dur;
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for(let i=0;i<bufferSize;i++){ data[i] = (Math.random()*2-1) * (1 - i/bufferSize); }
+  const src = ctx.createBufferSource();
+  src.buffer = buffer;
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(vol, ctx.currentTime+delay);
+  src.connect(gain).connect(ctx.destination);
+  src.start(ctx.currentTime+delay);
+}
+
+function dholBurst(){
+  // comedic desi drum burst using layered beeps + noise
+  const pattern = [0,0.15,0.3,0.38,0.55,0.7,0.78,0.95];
+  pattern.forEach((t,i)=>{
+    beep(i%2===0?90:140, 0.18, 'sine', 0.35, t);
+    noiseBurst(0.06, 0.15, t);
+  });
+}
+
+function cameraShutter(){
+  noiseBurst(0.08, 0.4, 0);
+  beep(1800, 0.03, 'square', 0.15, 0.02);
+}
+
+function errorTone(){
+  beep(220, 0.25, 'sawtooth', 0.2, 0);
+  beep(180, 0.3, 'sawtooth', 0.2, 0.15);
+}
+
+// ---------- sequence ----------
+const claimBtn = document.getElementById('claim-btn');
+const claimCard = document.getElementById('claim-card');
+const chaosLayer = document.getElementById('chaos-layer');
+const chaosText = document.getElementById('chaos-text');
+const glitchFlash = document.getElementById('glitch-flash');
+const glitchText = document.getElementById('glitch-text');
+const terminal = document.getElementById('terminal');
+const termLines = document.getElementById('term-lines');
+const termProgressBar = document.getElementById('term-progress-bar');
+const camFlash = document.getElementById('cam-flash');
+const camCaption = document.getElementById('cam-caption');
+const dodgeScreen = document.getElementById('dodge-screen');
+const dodgeBtn = document.getElementById('dodge-btn');
+const limbo = document.getElementById('limbo');
+const limboMsg = document.getElementById('limbo-msg');
+
+function wait(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+async function typeTerminalLines(lines){
+  for(const line of lines){
+    const div = document.createElement('div');
+    div.className='line';
+    div.textContent = line;
+    termLines.appendChild(div);
+    await wait(220 + Math.random()*180);
   }
-  requestAnimationFrame(drawBg);
-}
-drawBg();
-
-/* ---------------- aura logic ---------------- */
-const inputScreen = document.getElementById('inputScreen');
-const resultScreen = document.getElementById('resultScreen');
-const nameInput = document.getElementById('nameInput');
-const ageInput = document.getElementById('ageInput');
-const calcBtn = document.getElementById('calcBtn');
-const resetBtn = document.getElementById('resetBtn');
-const auraNum = document.getElementById('auraNum');
-const nameLine = document.getElementById('nameLine');
-const auraLabel = document.getElementById('auraLabel');
-const messageBox = document.getElementById('messageBox');
-
-let infiniteTimer = null;
-let speechTimer = null;
-
-function normalize(str){
-  return str.trim().toLowerCase().replace(/\s+/g,' ');
 }
 
-function hashName(str){
-  let hash = 0;
-  for(let i=0;i<str.length;i++){
-    hash = (hash*31 + str.charCodeAt(i)) >>> 0;
+async function runChaos(){
+  ac(); // unlock audio on gesture
+
+  // 1. verifying spinner
+  claimCard.classList.add('hide');
+  chaosLayer.classList.add('active');
+  await wait(1400);
+  chaosText.textContent = 'Confirming details...';
+  await wait(1200);
+
+  // 2. glitch flash + shake
+  chaosLayer.classList.remove('active');
+  errorTone();
+  document.body.classList.add('shake');
+  glitchFlash.style.display='block';
+  glitchText.style.display='block';
+  await wait(160);
+  glitchFlash.style.display='none';
+  await wait(120);
+  glitchFlash.style.display='block';
+  await wait(160);
+  glitchFlash.style.display='none';
+  glitchText.style.display='none';
+  document.body.classList.remove('shake');
+  await wait(200);
+
+  // 3. fake terminal hacking sequence
+  terminal.style.display='block';
+  await typeTerminalLines([
+    '> connecting to server... OK',
+    '> locating device... found',
+    '> scanning gallery/ ...',
+    '> reading contacts.db ...',
+    '> compressing selfie_047.jpg ...',
+    '> uploading to reward-server...'
+  ]);
+  // jumpy fake progress
+  const jumps = [12, 30, 31, 58, 40, 77, 65, 91, 100];
+  for(const val of jumps){
+    termProgressBar.style.width = val+'%';
+    await wait(280);
   }
-  return hash;
-}
+  await wait(500);
+  terminal.style.display='none';
+  termLines.innerHTML='';
+  termProgressBar.style.width='0%';
 
-function tierMessage(aura){
-  if(aura < 2000) return "Aura still loading... keep grinding 💪";
-  if(aura < 4500) return "Decent aura, there's room to grow ✨";
-  if(aura < 7000) return "Strong aura detected 🔥";
-  if(aura < 9000) return "Elite aura! People feel it when you walk in 😎";
-  return "Legendary aura. Absolute main character energy 👑";
-}
+  // 4. camera flash gotcha
+  cameraShutter();
+  camFlash.style.display='block';
+  camCaption.style.display='block';
+  await wait(140);
+  camFlash.style.display='none';
+  await wait(700);
+  camCaption.style.display='none';
 
-function animateCount(target, duration=1400){
-  const start = performance.now();
-  function step(now){
-    const t = Math.min(1, (now-start)/duration);
-    const eased = 1 - Math.pow(1-t, 3);
-    auraNum.textContent = Math.floor(eased * target).toLocaleString();
-    if(t < 1) requestAnimationFrame(step);
-    else auraNum.textContent = target.toLocaleString();
-  }
-  requestAnimationFrame(step);
-}
+  // 5. dodge button chaos
+  dodgeScreen.style.display='flex';
+  positionDodgeBtn();
+  await wait(2600);
+  dodgeScreen.style.display='none';
 
-const voiceMsg = document.getElementById('voiceMsg');
-
-function stopInfinite(){
-  if(infiniteTimer){ clearInterval(infiniteTimer); infiniteTimer = null; }
-  if(speechTimer){ clearInterval(speechTimer); speechTimer = null; }
-  if('speechSynthesis' in window) window.speechSynthesis.cancel();
-  voiceMsg.pause();
-  voiceMsg.currentTime = 0;
-  resultScreen.classList.remove('infinite');
-}
-
-function speak(text){
-  if(!('speechSynthesis' in window)) return;
-  window.speechSynthesis.cancel();
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.rate = 1;
-  utter.pitch = 1;
-  window.speechSynthesis.speak(utter);
-}
-
-calcBtn.addEventListener('click', () => {
-  const rawName = nameInput.value;
-  const name = normalize(rawName);
-  const ageVal = ageInput.value;
-
-  if(!rawName.trim()){
-    nameInput.focus();
-    return;
-  }
-
-  inputScreen.style.display = 'none';
-  resultScreen.classList.add('show');
-  resultScreen.classList.remove('infinite');
-  stopInfinite();
-
-  nameLine.textContent = rawName.trim();
-
-  const modiNames = ['modi','modi ji','modiji','narendra modi'];
-  const isModi = modiNames.includes(name);
-  const isVivek = name === 'vivek';
-
-  if(isModi){
-    /* -------- infinite aura mode -------- */
-    resultScreen.classList.add('infinite');
-    auraLabel.textContent = 'AURA POINTS (INFINITE)';
-    messageBox.textContent = "⚡ AURA CANNOT BE MEASURED. CALCULATION OVERFLOW ⚡";
-
-    let count = 0;
-    auraNum.textContent = '0';
-    infiniteTimer = setInterval(() => {
-      count += Math.floor(Math.random()*4000 + 1500);
-      auraNum.textContent = count.toLocaleString();
-    }, 20);
-
-    document.getElementById('voiceMsg').play();
-
-  } else if(isVivek){
-    /* -------- special case: vivek -------- */
-    const hash = hashName(name);
-    const aura = 7500 + (hash % 1500); // always high tier
-    auraLabel.textContent = 'AURA POINTS';
-    animateCount(aura);
-    messageBox.textContent = "Bhai, you will build your dream body, keep it up❤️‍🔥🫡";
-
-  } else {
-    /* -------- normal calculation -------- */
-    const hash = hashName(name);
-    let aura = (hash % 9000) + 100;
-    if(ageVal !== '' && !isNaN(ageVal)){
-      aura += parseInt(ageVal,10) * 3;
+  // 6. dhol / confetti sound burst + color flash disco
+  dholBurst();
+  let flashes = 0;
+  const discoColors = ['#F25C05','#39FF14','#F2C14E','#FF003C','#0F3D3E'];
+  const discoInterval = setInterval(()=>{
+    document.body.style.background = discoColors[flashes % discoColors.length];
+    flashes++;
+    if(flashes > 8){
+      clearInterval(discoInterval);
+      document.body.style.background = '';
     }
-    aura = Math.min(aura, 9999);
-    auraLabel.textContent = 'AURA POINTS';
-    animateCount(aura);
-    messageBox.textContent = tierMessage(aura);
-  }
-});
+  }, 110);
+  await wait(1300);
 
-resetBtn.addEventListener('click', () => {
-  stopInfinite();
-  resultScreen.classList.remove('show','infinite');
-  inputScreen.style.display = 'block';
-  nameInput.value = '';
-  ageInput.value = '';
-  nameInput.focus();
+  // 7. NO reveal — drop into ambiguous endless limbo
+  limbo.style.display='flex';
+  const limboMessages = [
+    'Please hold on...',
+    'Exporting your data & pictures...',
+    'Process is running...',
+    'Almost there...',
+    'Almost done...',
+    'Wait, something seems off...',
+    'Exporting your data & pictures...',
+    '...',
+    'Verifying again...'
+  ];
+  let mi = 0;
+  setInterval(()=>{
+    limboMsg.textContent = limboMessages[mi % limboMessages.length];
+    mi++;
+  }, 2600);
+}
+
+function positionDodgeBtn(){
+  const maxX = window.innerWidth - 180;
+  const maxY = window.innerHeight - 60;
+  dodgeBtn.style.left = (Math.random()*maxX)+'px';
+  dodgeBtn.style.top = (Math.random()*maxY + 100)+'px';
+}
+
+document.addEventListener('mousemove', (e)=>{
+  if(dodgeScreen.style.display !== 'flex') return;
+  const rect = dodgeBtn.getBoundingClientRect();
+  const btnCenterX = rect.left + rect.width/2;
+  const btnCenterY = rect.top + rect.height/2;
+  const dist = Math.hypot(e.clientX-btnCenterX, e.clientY-btnCenterY);
+  if(dist < 120){ positionDodgeBtn(); }
 });
+dodgeBtn.addEventListener('click', ()=>{ positionDodgeBtn(); });
+dodgeBtn.addEventListener('touchstart', (e)=>{ e.preventDefault(); positionDodgeBtn(); });
+
+claimBtn.addEventListener('click', runChaos);
 </script>
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 </body>
 </html>
