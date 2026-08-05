@@ -1,528 +1,390 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎉 You've Won!</title>
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Poppins:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Instagram</title>
 <style>
   :root{
-    --teal:#0F3D3E;
-    --teal-deep:#0A2B2C;
-    --gold:#F2C14E;
-    --orange:#F25C05;
-    --cream:#FEFAE0;
-    --glitch-bg:#0D0208;
-    --glitch-green:#39FF14;
-    --glitch-red:#FF003C;
+    --ig-black:#000;
+    --ig-white:#fff;
+    --ig-border:#dbdbdb;
+    --ig-gray-text:#8e8e8e;
+    --ig-blue:#3897f0;
+    --ig-bubble-in:#efefef;
+    --ig-bubble-out:#3897f0;
+    --ig-red:#ed4956;
   }
-  *{margin:0;padding:0;box-sizing:border-box;}
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{
-    height:100%;
+    margin:0; padding:0; height:100%;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:#000;
+  }
+  #phone{
+    max-width:420px;
+    margin:0 auto;
+    height:100vh;
+    background:var(--ig-white);
+    display:flex;
+    flex-direction:column;
+    position:relative;
     overflow:hidden;
-    font-family:'Poppins',sans-serif;
-    background:var(--teal);
-    background-image:
-      radial-gradient(circle at 15% 20%, rgba(242,193,78,0.15), transparent 40%),
-      radial-gradient(circle at 85% 80%, rgba(242,92,5,0.15), transparent 40%);
+    border-left:1px solid #222;
+    border-right:1px solid #222;
+  }
+
+  /* ---------- Header ---------- */
+  #header{
     display:flex;
     align-items:center;
-    justify-content:center;
-    position:relative;
+    gap:10px;
+    padding:10px 12px;
+    border-bottom:1px solid var(--ig-border);
+    flex-shrink:0;
+    transition:opacity .4s ease;
   }
+  #back-arrow{width:22px;height:22px;flex-shrink:0;}
+  #avatar-wrap{position:relative; flex-shrink:0;}
+  #avatar{
+    width:38px;height:38px;border-radius:50%;
+    background:linear-gradient(45deg,#f9ce34,#ee2a7b 60%,#6228d7);
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-weight:600;font-size:16px;
+    transition:filter .6s ease, background .6s ease;
+  }
+  #avatar.blocked{
+    filter:grayscale(1) brightness(1.15);
+  }
+  #online-dot{
+    position:absolute; right:0; bottom:0;
+    width:11px;height:11px;border-radius:50%;
+    background:#3fd67c; border:2px solid var(--ig-white);
+    transition:opacity .4s ease;
+  }
+  #header-text{display:flex; flex-direction:column; line-height:1.15;}
+  #header-name{font-weight:600; font-size:14.5px; color:var(--ig-black);}
+  #header-status{font-size:12px; color:var(--ig-gray-text);}
+  #header-icons{margin-left:auto; display:flex; gap:18px; opacity:.85;}
+  #header-icons svg{width:23px;height:23px;}
 
-  /* ---------- CONFETTI BG ---------- */
-  #confetti-layer{position:fixed;inset:0;pointer-events:none;z-index:1;}
-  .confetti-piece{
-    position:absolute;top:-20px;
-    width:8px;height:14px;border-radius:2px;
-    opacity:0.85;
-    animation:fall linear infinite;
+  /* ---------- Thread ---------- */
+  #thread{
+    flex:1;
+    overflow-y:auto;
+    padding:14px 12px 10px;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
   }
-  @keyframes fall{
-    to{ transform:translateY(110vh) rotate(360deg); }
-  }
-
-  /* ---------- CLAIM CARD ---------- */
-  #claim-card{
-    position:relative;z-index:2;
-    background:var(--cream);
-    border-radius:24px;
-    padding:44px 40px 36px;
-    max-width:420px;
-    width:90%;
-    text-align:center;
-    box-shadow:0 30px 60px rgba(0,0,0,0.35), 0 0 0 6px rgba(242,193,78,0.35);
-    transform:scale(1);
-    transition:transform .3s ease, opacity .3s ease;
-  }
-  #claim-card.hide{ transform:scale(0.85); opacity:0; pointer-events:none; }
-
-  .badge{
-    display:inline-block;
-    background:var(--orange);
-    color:var(--cream);
-    font-family:'Space Mono',monospace;
-    font-size:12px;
-    letter-spacing:1px;
-    padding:6px 14px;
+  .row{display:flex; width:100%; margin-top:6px;}
+  .row.out{justify-content:flex-end;}
+  .row.in{justify-content:flex-start;}
+  .bubble-wrap{position:relative; max-width:75%; display:flex; flex-direction:column;}
+  .bubble{
+    padding:9px 14px;
     border-radius:20px;
-    margin-bottom:16px;
-    text-transform:uppercase;
-  }
-  h1{
-    font-family:'Baloo 2',sans-serif;
-    font-size:30px;
-    color:var(--teal-deep);
-    line-height:1.25;
-    margin-bottom:10px;
-  }
-  h1 span{ color:var(--orange); }
-  .amount{
-    font-family:'Baloo 2',sans-serif;
-    font-size:52px;
-    font-weight:800;
-    color:var(--teal-deep);
-    margin:14px 0 6px;
-  }
-  .amount sup{ font-size:24px; vertical-align:top; top:8px; position:relative; }
-  p.sub{
-    color:#4a5c4e;
     font-size:14.5px;
-    margin-bottom:26px;
-    line-height:1.5;
+    line-height:1.35;
+    word-wrap:break-word;
+    animation:pop .18s ease;
   }
-  #claim-btn{
-    background:var(--orange);
-    color:#fff;
-    border:none;
-    font-family:'Baloo 2',sans-serif;
-    font-size:19px;
-    font-weight:700;
-    padding:16px 20px;
-    width:100%;
-    border-radius:14px;
-    cursor:pointer;
-    box-shadow:0 10px 0 #B84203, 0 14px 20px rgba(0,0,0,0.25);
-    transition:transform .08s ease;
-  }
-  #claim-btn:active{ transform:translateY(6px); box-shadow:0 4px 0 #B84203; }
-  .fine-print{
-    margin-top:16px;
-    font-size:11px;
-    color:#7a8a7d;
-    font-family:'Space Mono',monospace;
-  }
+  @keyframes pop{from{transform:scale(.85); opacity:0;} to{transform:scale(1); opacity:1;}}
+  .row.out .bubble{background:var(--ig-bubble-out); color:#fff; border-bottom-right-radius:6px;}
+  .row.in .bubble{background:var(--ig-bubble-in); color:#000; border-bottom-left-radius:6px;}
 
-  /* ---------- FULLSCREEN OVERLAY LAYERS ---------- */
-  #chaos-layer{
-    position:fixed;inset:0;
-    z-index:50;
-    display:none;
-    background:var(--teal-deep);
-    align-items:center;justify-content:center;
-    text-align:center;
-    overflow:hidden;
-  }
-  #chaos-layer.active{ display:flex; }
+  .meta{font-size:11.5px; color:var(--ig-gray-text); margin-top:3px; text-align:right; padding-right:4px; min-height:14px;}
 
-  .spinner{
-    width:54px;height:54px;
-    border:5px solid rgba(255,255,255,0.15);
-    border-top-color:var(--gold);
-    border-radius:50%;
-    animation:spin 0.8s linear infinite;
-    margin:0 auto 22px;
-  }
-  @keyframes spin{ to{ transform:rotate(360deg); } }
-
-  .chaos-text{
-    font-family:'Baloo 2',sans-serif;
-    color:var(--cream);
-    font-size:20px;
-    letter-spacing:0.5px;
-  }
-
-  /* glitch flash */
-  #glitch-flash{
-    position:fixed;inset:0;z-index:60;
-    background:var(--glitch-red);
-    display:none;
-    mix-blend-mode:screen;
-  }
-
-  #glitch-text{
-    position:fixed;z-index:61;
-    top:50%;left:50%;
-    transform:translate(-50%,-50%);
-    font-family:'Space Mono',monospace;
-    font-weight:700;
-    font-size:15vw;
-    color:var(--glitch-red);
-    text-shadow:4px 0 var(--glitch-green), -4px 0 cyan;
-    display:none;
-    letter-spacing:4px;
-  }
-
-  /* terminal */
-  #terminal{
-    position:fixed;inset:0;z-index:55;
-    background:var(--glitch-bg);
-    color:var(--glitch-green);
-    font-family:'Space Mono',monospace;
-    font-size:14px;
-    padding:30px;
-    display:none;
-    overflow:hidden;
-    line-height:1.8;
-  }
-  #terminal .line{ opacity:0; animation:appear .05s forwards; white-space:pre; }
-  @keyframes appear{ to{ opacity:1; } }
-  #term-progress-wrap{
-    margin-top:20px;
-    border:1px solid var(--glitch-green);
-    height:22px;
-    width:100%;
-    max-width:500px;
-  }
-  #term-progress-bar{
-    height:100%;
-    background:var(--glitch-green);
-    width:0%;
-    transition:width .2s ease;
-  }
-
-  /* camera flash */
-  #cam-flash{
-    position:fixed;inset:0;z-index:70;
-    background:#fff;
-    display:none;
-  }
-  #cam-caption{
-    position:fixed;z-index:71;
-    top:20px;left:50%;transform:translateX(-50%);
-    font-family:'Baloo 2',sans-serif;
-    font-size:20px;
-    background:rgba(0,0,0,0.6);
-    color:#fff;
-    padding:10px 22px;
-    border-radius:30px;
-    display:none;
-  }
-
-  /* dodge button screen */
-  #dodge-screen{
-    position:fixed;inset:0;z-index:56;
-    background:var(--glitch-bg);
-    display:none;
-    align-items:center;justify-content:center;
-    flex-direction:column;
-  }
-  #dodge-title{
-    color:var(--cream);
-    font-family:'Baloo 2',sans-serif;
-    font-size:22px;
-    margin-bottom:40px;
-    text-align:center;
-    padding:0 20px;
-  }
-  #dodge-btn{
+  .reaction{
     position:absolute;
-    background:var(--glitch-red);
-    color:#fff;
-    border:none;
-    font-family:'Baloo 2',sans-serif;
-    font-weight:700;
-    font-size:16px;
-    padding:14px 26px;
-    border-radius:12px;
-    cursor:pointer;
-    transition:top .18s ease, left .18s ease;
+    bottom:-10px;
+    left:-6px;
+    background:#fff;
+    border-radius:50%;
+    width:22px;height:22px;
+    font-size:13px;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 1px 3px rgba(0,0,0,.25);
+    transform:scale(0);
+    animation:reactPop .35s cubic-bezier(.34,1.56,.64,1) forwards;
   }
+  @keyframes reactPop{ to{transform:scale(1);} }
 
-  /* final endless limbo state */
-  #limbo{
-    position:fixed;inset:0;z-index:80;
-    background:var(--glitch-bg);
-    display:none;
-    align-items:center;justify-content:center;
+  #starter-day{
+    text-align:center; color:var(--ig-gray-text); font-size:12px;
+    margin:6px 0 14px;
+  }
+  #starter-profile{
+    display:flex; flex-direction:column; align-items:center; margin:10px 0 22px;
+  }
+  #starter-avatar{
+    width:90px;height:90px;border-radius:50%;
+    background:linear-gradient(45deg,#f9ce34,#ee2a7b 60%,#6228d7);
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-weight:600;font-size:34px; margin-bottom:10px;
+  }
+  #starter-name{font-weight:600; font-size:16px;}
+  #starter-sub{color:var(--ig-gray-text); font-size:13px; margin-top:2px;}
+
+  /* ---------- Full-screen blocked takeover ---------- */
+  #blocked-screen{
+    position:absolute;
+    inset:0;
+    background:#fff;
+    display:flex;
     flex-direction:column;
+    align-items:center;
+    justify-content:center;
     text-align:center;
+    padding:32px 34px 0;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .5s ease;
+    z-index:30;
   }
-  #limbo .spinner{ border-top-color:var(--glitch-green); }
-  #limbo-msg{
-    font-family:'Space Mono',monospace;
-    color:var(--glitch-green);
-    font-size:15px;
-    margin-top:18px;
-    min-height:20px;
+  #blocked-screen.show{ opacity:1; pointer-events:auto; }
+  #blocked-icon{
+    width:64px; height:64px; margin-bottom:22px;
+    opacity:0;
+    transform:scale(.6);
+    transition:opacity .5s ease .15s, transform .5s cubic-bezier(.34,1.56,.64,1) .15s;
+  }
+  #blocked-screen.show #blocked-icon{ opacity:1; transform:scale(1); }
+  #blocked-heading{
+    font-size:19px; font-weight:400; color:#262626; line-height:1.4;
+    max-width:280px;
+    opacity:0; transform:translateY(8px);
+    transition:opacity .45s ease .3s, transform .45s ease .3s;
+  }
+  #blocked-screen.show #blocked-heading{ opacity:1; transform:translateY(0); }
+  #blocked-sub{
+    font-size:14px; color:#8e8e8e; margin-top:14px; line-height:1.5; max-width:290px;
+    opacity:0; transform:translateY(8px);
+    transition:opacity .45s ease .45s, transform .45s ease .45s;
+  }
+  #blocked-screen.show #blocked-sub{ opacity:1; transform:translateY(0); }
+  #blocked-link{
+    margin-top:22px; color:var(--ig-blue); font-size:14px; text-decoration:none; font-weight:500;
+    opacity:0; transition:opacity .45s ease .6s;
+  }
+  #blocked-screen.show #blocked-link{ opacity:1; }
+
+  #input-disabled-note{
+    text-align:center; color:var(--ig-gray-text); font-size:12.5px;
+    padding:10px 20px 4px;
   }
 
-  .shake{ animation:shake .4s ease; }
-  @keyframes shake{
-    0%,100%{ transform:translate(0,0); }
-    20%{ transform:translate(-10px,6px) rotate(-1deg); }
-    40%{ transform:translate(8px,-8px) rotate(1deg); }
-    60%{ transform:translate(-6px,10px) rotate(-1deg); }
-    80%{ transform:translate(10px,-4px) rotate(1deg); }
+  /* ---------- Input bar ---------- */
+  #inputbar{
+    display:flex; align-items:center; gap:8px;
+    padding:8px 10px; border-top:1px solid var(--ig-border);
+    flex-shrink:0; background:#fff;
   }
+  #camera-icon,#mic-icon,#img-icon{width:26px;height:26px; flex-shrink:0; opacity:.85;}
+  #msg-input{
+    flex:1;
+    border:1px solid var(--ig-border);
+    border-radius:20px;
+    padding:8px 14px;
+    font-size:14.5px;
+    outline:none;
+    background:#fafafa;
+  }
+  #msg-input:disabled{color:#bbb; background:#f2f2f2;}
+  #send-btn{
+    color:var(--ig-blue); font-weight:600; font-size:14.5px;
+    border:none; background:none; padding:4px 6px; cursor:pointer;
+    flex-shrink:0;
+  }
+  #send-btn:disabled{opacity:.4; cursor:default;}
 
-  @media (prefers-reduced-motion: reduce){
-    *{ animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; }
+  /* ---------- Seen tick row for last own message ---------- */
+  .seen-row{
+    display:flex; justify-content:flex-end; align-items:center; gap:5px;
+    margin-top:2px; padding-right:4px;
   }
+  .seen-avatar{
+    width:14px;height:14px;border-radius:50%;
+    background:linear-gradient(45deg,#f9ce34,#ee2a7b 60%,#6228d7);
+    opacity:0; transition:opacity .35s ease;
+  }
+  .seen-avatar.show{opacity:1;}
+  .seen-text{font-size:11px; color:var(--ig-gray-text); opacity:0; transition:opacity .35s ease;}
+  .seen-text.show{opacity:1;}
 </style>
 </head>
 <body>
 
-<div id="confetti-layer"></div>
+<div id="phone">
 
-<div id="claim-card">
-  <span class="badge">Lucky Winner 🎊</span>
-  <h1>Congratulations! Your number has been <span>selected</span></h1>
-  <div class="amount"><sup>₹</sup>5,000</div>
-  <p class="sub">Press the button to transfer your cashback reward to your wallet. You're the only one seeing this offer.</p>
-  <button id="claim-btn">Claim Now 🎁</button>
-  <div class="fine-print">*Verification required · one-time process</div>
-</div>
-
-<!-- chaos step 1: verifying -->
-<div id="chaos-layer">
-  <div>
-    <div class="spinner"></div>
-    <div class="chaos-text" id="chaos-text">Verifying claim...</div>
+  <div id="header">
+    <svg id="back-arrow" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+    <div id="avatar-wrap">
+      <div id="avatar">A</div>
+      <div id="online-dot"></div>
+    </div>
+    <div id="header-text">
+      <div id="header-name">ananya._x</div>
+      <div id="header-status">Active now</div>
+    </div>
+    <div id="header-icons">
+      <svg viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="1.8"><path d="M22 16.92V21a1 1 0 01-1.09 1A19 19 0 013 4.09 1 1 0 014 3h4.09a1 1 0 011 .75l1 4a1 1 0 01-.29 1L8.5 10.5a14 14 0 006 6l1.75-1.3a1 1 0 011-.24l4 1a1 1 0 01.75 1z"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="1.8"><rect x="3" y="7" width="14" height="10" rx="2"/><path d="M21 8l-4 3 4 3V8z"/></svg>
+    </div>
   </div>
+
+  <div id="thread">
+    <div id="starter-day">Today 4:12 PM</div>
+    <div id="starter-profile">
+      <div id="starter-avatar">A</div>
+      <div id="starter-name">ananya._x</div>
+      <div id="starter-sub">Instagram · Message requests</div>
+    </div>
+    <!-- messages injected here -->
+  </div>
+
+  <div id="input-disabled-note" style="display:none;">You can't reply to this conversation.</div>
+
+  <div id="inputbar">
+    <svg id="camera-icon" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="1.8"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+    <input id="msg-input" type="text" placeholder="Message..." autocomplete="off">
+    <svg id="img-icon" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+    <button id="send-btn" disabled>Send</button>
+  </div>
+
+  <div id="blocked-screen">
+    <svg id="blocked-icon" viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="1.3">
+      <circle cx="12" cy="12" r="10.5"/>
+      <path d="M4 4l16 16" stroke-width="1.3"/>
+      <rect x="7" y="8" width="10" height="8" rx="1.4"/>
+      <circle cx="12" cy="12" r="2.4"/>
+    </svg>
+    <div id="blocked-heading">Sorry, this page isn't available.</div>
+    <div id="blocked-sub">The link you followed may be broken, or the page may have been removed.</div>
+    <a id="blocked-link" href="#">Go back to Instagram.</a>
+  </div>
+
 </div>
 
-<div id="glitch-flash"></div>
-<div id="glitch-text">ERROR</div>
-
-<div id="terminal">
-  <div id="term-lines"></div>
-  <div id="term-progress-wrap"><div id="term-progress-bar"></div></div>
-</div>
-
-<div id="cam-flash"></div>
-<div id="cam-caption">📸 Smile!</div>
-
-<div id="dodge-screen">
-  <div id="dodge-title">Want to stop? Catch the button first 👀</div>
-  <button id="dodge-btn">Cancel</button>
-</div>
-
-<div id="limbo">
-  <div class="spinner"></div>
-  <div id="limbo-msg">Please hold on...</div>
-</div>
+<audio id="prank-audio" src="cat-laugh-meme-1.mp3" preload="auto"></audio>
 
 <script>
-// ---------- confetti ----------
-const colors = ['#F2C14E','#F25C05','#0F3D3E','#FEFAE0','#39FF14'];
-const confettiLayer = document.getElementById('confetti-layer');
-for(let i=0;i<50;i++){
-  const p = document.createElement('div');
-  p.className='confetti-piece';
-  p.style.left = Math.random()*100+'vw';
-  p.style.background = colors[Math.floor(Math.random()*colors.length)];
-  p.style.animationDuration = (4+Math.random()*4)+'s';
-  p.style.animationDelay = (Math.random()*5)+'s';
-  confettiLayer.appendChild(p);
-}
+const thread = document.getElementById('thread');
+const input = document.getElementById('msg-input');
+const sendBtn = document.getElementById('send-btn');
+const avatar = document.getElementById('avatar');
+const onlineDot = document.getElementById('online-dot');
+const headerStatus = document.getElementById('header-status');
+const blockedScreen = document.getElementById('blocked-screen');
+const inputDisabledNote = document.getElementById('input-disabled-note');
+const inputbar = document.getElementById('inputbar');
+const prankAudio = document.getElementById('prank-audio');
 
-// ---------- audio (generated, no external files) ----------
-let actx;
-function ac(){ if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)(); return actx; }
+let pranked = false;
 
-function beep(freq, dur, type='sine', vol=0.25, delay=0){
-  const ctx = ac();
-  const t0 = ctx.currentTime + delay;
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.type = type;
-  osc.frequency.setValueAtTime(freq, t0);
-  gain.gain.setValueAtTime(vol, t0);
-  gain.gain.exponentialRampToValueAtTime(0.001, t0+dur);
-  osc.connect(gain).connect(ctx.destination);
-  osc.start(t0);
-  osc.stop(t0+dur);
-}
-
-function noiseBurst(dur, vol=0.3, delay=0){
-  const ctx = ac();
-  const bufferSize = ctx.sampleRate * dur;
-  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-  const data = buffer.getChannelData(0);
-  for(let i=0;i<bufferSize;i++){ data[i] = (Math.random()*2-1) * (1 - i/bufferSize); }
-  const src = ctx.createBufferSource();
-  src.buffer = buffer;
-  const gain = ctx.createGain();
-  gain.gain.setValueAtTime(vol, ctx.currentTime+delay);
-  src.connect(gain).connect(ctx.destination);
-  src.start(ctx.currentTime+delay);
-}
-
-function dholBurst(){
-  // comedic desi drum burst using layered beeps + noise
-  const pattern = [0,0.15,0.3,0.38,0.55,0.7,0.78,0.95];
-  pattern.forEach((t,i)=>{
-    beep(i%2===0?90:140, 0.18, 'sine', 0.35, t);
-    noiseBurst(0.06, 0.15, t);
-  });
-}
-
-function cameraShutter(){
-  noiseBurst(0.08, 0.4, 0);
-  beep(1800, 0.03, 'square', 0.15, 0.02);
-}
-
-function errorTone(){
-  beep(220, 0.25, 'sawtooth', 0.2, 0);
-  beep(180, 0.3, 'sawtooth', 0.2, 0.15);
-}
-
-// ---------- sequence ----------
-const claimBtn = document.getElementById('claim-btn');
-const claimCard = document.getElementById('claim-card');
-const chaosLayer = document.getElementById('chaos-layer');
-const chaosText = document.getElementById('chaos-text');
-const glitchFlash = document.getElementById('glitch-flash');
-const glitchText = document.getElementById('glitch-text');
-const terminal = document.getElementById('terminal');
-const termLines = document.getElementById('term-lines');
-const termProgressBar = document.getElementById('term-progress-bar');
-const camFlash = document.getElementById('cam-flash');
-const camCaption = document.getElementById('cam-caption');
-const dodgeScreen = document.getElementById('dodge-screen');
-const dodgeBtn = document.getElementById('dodge-btn');
-const limbo = document.getElementById('limbo');
-const limboMsg = document.getElementById('limbo-msg');
-
-function wait(ms){ return new Promise(r=>setTimeout(r,ms)); }
-
-async function typeTerminalLines(lines){
-  for(const line of lines){
-    const div = document.createElement('div');
-    div.className='line';
-    div.textContent = line;
-    termLines.appendChild(div);
-    await wait(220 + Math.random()*180);
-  }
-}
-
-async function runChaos(){
-  ac(); // unlock audio on gesture
-
-  // 1. verifying spinner
-  claimCard.classList.add('hide');
-  chaosLayer.classList.add('active');
-  await wait(1400);
-  chaosText.textContent = 'Confirming details...';
-  await wait(1200);
-
-  // 2. glitch flash + shake
-  chaosLayer.classList.remove('active');
-  errorTone();
-  document.body.classList.add('shake');
-  glitchFlash.style.display='block';
-  glitchText.style.display='block';
-  await wait(160);
-  glitchFlash.style.display='none';
-  await wait(120);
-  glitchFlash.style.display='block';
-  await wait(160);
-  glitchFlash.style.display='none';
-  glitchText.style.display='none';
-  document.body.classList.remove('shake');
-  await wait(200);
-
-  // 3. fake terminal hacking sequence
-  terminal.style.display='block';
-  await typeTerminalLines([
-    '> connecting to server... OK',
-    '> locating device... found',
-    '> scanning gallery/ ...',
-    '> reading contacts.db ...',
-    '> compressing selfie_047.jpg ...',
-    '> uploading to reward-server...'
-  ]);
-  // jumpy fake progress
-  const jumps = [12, 30, 31, 58, 40, 77, 65, 91, 100];
-  for(const val of jumps){
-    termProgressBar.style.width = val+'%';
-    await wait(280);
-  }
-  await wait(500);
-  terminal.style.display='none';
-  termLines.innerHTML='';
-  termProgressBar.style.width='0%';
-
-  // 4. camera flash gotcha
-  cameraShutter();
-  camFlash.style.display='block';
-  camCaption.style.display='block';
-  await wait(140);
-  camFlash.style.display='none';
-  await wait(700);
-  camCaption.style.display='none';
-
-  // 5. dodge button chaos
-  dodgeScreen.style.display='flex';
-  positionDodgeBtn();
-  await wait(2600);
-  dodgeScreen.style.display='none';
-
-  // 6. dhol / confetti sound burst + color flash disco
-  dholBurst();
-  let flashes = 0;
-  const discoColors = ['#F25C05','#39FF14','#F2C14E','#FF003C','#0F3D3E'];
-  const discoInterval = setInterval(()=>{
-    document.body.style.background = discoColors[flashes % discoColors.length];
-    flashes++;
-    if(flashes > 8){
-      clearInterval(discoInterval);
-      document.body.style.background = '';
-    }
-  }, 110);
-  await wait(1300);
-
-  // 7. NO reveal — drop into ambiguous endless limbo
-  limbo.style.display='flex';
-  const limboMessages = [
-    'Please hold on...',
-    'Exporting your data & pictures...',
-    'Process is running...',
-    'Almost there...',
-    'Almost done...',
-    'Wait, something seems off...',
-    'Exporting your data & pictures...',
-    '...',
-    'Verifying again...'
-  ];
-  let mi = 0;
-  setInterval(()=>{
-    limboMsg.textContent = limboMessages[mi % limboMessages.length];
-    mi++;
-  }, 2600);
-}
-
-function positionDodgeBtn(){
-  const maxX = window.innerWidth - 180;
-  const maxY = window.innerHeight - 60;
-  dodgeBtn.style.left = (Math.random()*maxX)+'px';
-  dodgeBtn.style.top = (Math.random()*maxY + 100)+'px';
-}
-
-document.addEventListener('mousemove', (e)=>{
-  if(dodgeScreen.style.display !== 'flex') return;
-  const rect = dodgeBtn.getBoundingClientRect();
-  const btnCenterX = rect.left + rect.width/2;
-  const btnCenterY = rect.top + rect.height/2;
-  const dist = Math.hypot(e.clientX-btnCenterX, e.clientY-btnCenterY);
-  if(dist < 120){ positionDodgeBtn(); }
+input.addEventListener('input', () => {
+  sendBtn.disabled = input.value.trim().length === 0;
 });
-dodgeBtn.addEventListener('click', ()=>{ positionDodgeBtn(); });
-dodgeBtn.addEventListener('touchstart', (e)=>{ e.preventDefault(); positionDodgeBtn(); });
+input.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter') sendMessage();
+});
+sendBtn.addEventListener('click', sendMessage);
 
-claimBtn.addEventListener('click', runChaos);
+function scrollDown(){
+  thread.scrollTop = thread.scrollHeight;
+}
+
+function sendMessage(){
+  if(pranked) return;
+  const text = input.value.trim();
+  if(!text) return;
+  pranked = true;
+
+  // 1. Render sent bubble
+  const row = document.createElement('div');
+  row.className = 'row out';
+  const wrap = document.createElement('div');
+  wrap.className = 'bubble-wrap';
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.textContent = text;
+  wrap.appendChild(bubble);
+  row.appendChild(wrap);
+  thread.appendChild(row);
+
+  const seenRow = document.createElement('div');
+  seenRow.className = 'seen-row';
+  seenRow.innerHTML = '<span class="seen-text">Seen</span><div class="seen-avatar"></div>';
+  thread.appendChild(seenRow);
+
+  input.value = '';
+  input.disabled = true;
+  sendBtn.disabled = true;
+  scrollDown();
+
+  const seenText = seenRow.querySelector('.seen-text');
+  const seenAvatar = seenRow.querySelector('.seen-avatar');
+
+  // 2. "Seen" after a short pause
+  setTimeout(() => {
+    seenText.classList.add('show');
+    seenAvatar.classList.add('show');
+    scrollDown();
+  }, 1300);
+
+  // 3. 😂 reaction on the message
+  setTimeout(() => {
+    const reaction = document.createElement('div');
+    reaction.className = 'reaction';
+    reaction.textContent = '😂';
+    wrap.appendChild(reaction);
+    scrollDown();
+  }, 2600);
+
+  // 4. Blocked
+  setTimeout(() => {
+    goBlocked();
+  }, 4400);
+}
+
+function goBlocked(){
+  avatar.classList.add('blocked');
+  onlineDot.style.opacity = '0';
+  headerStatus.textContent = 'Active 2h ago';
+  inputbar.style.display = 'none';
+  inputDisabledNote.style.display = 'block';
+  blockedScreen.classList.add('show');
+
+  // 5. Play the prank audio the moment the full-screen block takes over
+  prankAudio.play().catch(() => {
+    playFallbackSound();
+  });
+  prankAudio.onerror = playFallbackSound;
+}
+
+// Fallback tone, only used if cat-laugh-meme-1.mp3 can't be found/played
+let fallbackPlayed = false;
+function playFallbackSound(){
+  if(fallbackPlayed) return;
+  fallbackPlayed = true;
+  try{
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const now = ctx.currentTime;
+    for(let i=0;i<3;i++){
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'square';
+      const start = now + i*0.28;
+      osc.frequency.setValueAtTime(700 + i*120, start);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(0.2, start+0.05);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start+0.25);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(start);
+      osc.stop(start+0.28);
+    }
+  }catch(e){ /* audio unsupported, silently ignore */ }
+}
 </script>
 
 </body>
