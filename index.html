@@ -1,391 +1,298 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Instagram</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy Birthday KARAN</title>
 <style>
-  :root{
-    --ig-black:#000;
-    --ig-white:#fff;
-    --ig-border:#dbdbdb;
-    --ig-gray-text:#8e8e8e;
-    --ig-blue:#3897f0;
-    --ig-bubble-in:#efefef;
-    --ig-bubble-out:#3897f0;
-    --ig-red:#ed4956;
-  }
-  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-  html,body{
-    margin:0; padding:0; height:100%;
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    background:#000;
-  }
-  #phone{
-    max-width:420px;
-    margin:0 auto;
-    height:100vh;
-    background:var(--ig-white);
-    display:flex;
-    flex-direction:column;
-    position:relative;
-    overflow:hidden;
-    border-left:1px solid #222;
-    border-right:1px solid #222;
-  }
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Outfit:wght@300;400;500;600&display=swap');
 
-  /* ---------- Header ---------- */
-  #header{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    padding:10px 12px;
-    border-bottom:1px solid var(--ig-border);
-    flex-shrink:0;
-    transition:opacity .4s ease;
-  }
-  #back-arrow{width:22px;height:22px;flex-shrink:0;}
-  #avatar-wrap{position:relative; flex-shrink:0;}
-  #avatar{
-    width:38px;height:38px;border-radius:50%;
-    background:linear-gradient(45deg,#f9ce34,#ee2a7b 60%,#6228d7);
-    display:flex;align-items:center;justify-content:center;
-    color:#fff;font-weight:600;font-size:16px;
-    transition:filter .6s ease, background .6s ease;
-  }
-  #avatar.blocked{
-    filter:grayscale(1) brightness(1.15);
-  }
-  #online-dot{
-    position:absolute; right:0; bottom:0;
-    width:11px;height:11px;border-radius:50%;
-    background:#3fd67c; border:2px solid var(--ig-white);
-    transition:opacity .4s ease;
-  }
-  #header-text{display:flex; flex-direction:column; line-height:1.15;}
-  #header-name{font-weight:600; font-size:14.5px; color:var(--ig-black);}
-  #header-status{font-size:12px; color:var(--ig-gray-text);}
-  #header-icons{margin-left:auto; display:flex; gap:18px; opacity:.85;}
-  #header-icons svg{width:23px;height:23px;}
+:root{
+  --bg-a: #0b0f2e;
+  --bg-b: #1a0b2e;
+  --pink: #ff4fa3;
+  --gold: #ffc857;
+  --cyan: #4fd1ff;
+  --ink: #f5f3ff;
+  --ink-dim: rgba(245,243,255,0.68);
+  --glass: rgba(255,255,255,0.09);
+  --glass-strong: rgba(255,255,255,0.16);
+  --glass-border: rgba(255,255,255,0.22);
+}
+*{ box-sizing: border-box; }
+html{ scroll-behavior: smooth; overflow-x: hidden; width: 100%; }
+body{
+  margin: 0;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 100vw;
+  font-family: 'Outfit', sans-serif;
+  color: var(--ink);
+  background: radial-gradient(ellipse at 20% 10%, #24124a 0%, transparent 55%),
+              radial-gradient(ellipse at 85% 20%, #0d2a4a 0%, transparent 50%),
+              radial-gradient(ellipse at 50% 90%, #3a0d3a 0%, transparent 55%),
+              linear-gradient(160deg, var(--bg-a), var(--bg-b));
+  background-attachment: fixed;
+  overflow-x: hidden;
+  position: relative;
+}
+a:focus-visible, button:focus-visible{ outline: 2px solid var(--cyan); outline-offset: 3px; }
 
-  /* ---------- Thread ---------- */
-  #thread{
-    flex:1;
-    overflow-y:auto;
-    padding:14px 12px 10px;
-    display:flex;
-    flex-direction:column;
-    gap:2px;
-  }
-  .row{display:flex; width:100%; margin-top:6px;}
-  .row.out{justify-content:flex-end;}
-  .row.in{justify-content:flex-start;}
-  .bubble-wrap{position:relative; max-width:75%; display:flex; flex-direction:column;}
-  .bubble{
-    padding:9px 14px;
-    border-radius:20px;
-    font-size:14.5px;
-    line-height:1.35;
-    word-wrap:break-word;
-    animation:pop .18s ease;
-  }
-  @keyframes pop{from{transform:scale(.85); opacity:0;} to{transform:scale(1); opacity:1;}}
-  .row.out .bubble{background:var(--ig-bubble-out); color:#fff; border-bottom-right-radius:6px;}
-  .row.in .bubble{background:var(--ig-bubble-in); color:#000; border-bottom-left-radius:6px;}
+.bg-layer{ position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+.blob{ position: absolute; border-radius: 50%; filter: blur(70px); opacity: 0.55; }
+.blob-1{ width: 420px; height: 420px; background: var(--pink); top: -10%; left: -8%; animation: drift1 22s ease-in-out infinite; }
+.blob-2{ width: 380px; height: 380px; background: var(--cyan); bottom: -12%; right: -6%; animation: drift2 26s ease-in-out infinite; }
+.blob-3{ width: 300px; height: 300px; background: var(--gold); top: 40%; left: 60%; animation: drift3 19s ease-in-out infinite; opacity: 0.35; }
+@keyframes drift1{ 0%,100%{ transform: translate(0,0); } 50%{ transform: translate(60px, 40px); } }
+@keyframes drift2{ 0%,100%{ transform: translate(0,0); } 50%{ transform: translate(-50px, -30px); } }
+@keyframes drift3{ 0%,100%{ transform: translate(0,0) scale(1); } 50%{ transform: translate(-40px, 50px) scale(1.15); } }
 
-  .meta{font-size:11.5px; color:var(--ig-gray-text); margin-top:3px; text-align:right; padding-right:4px; min-height:14px;}
+.emoji-field{ position: absolute; inset: 0; overflow: hidden; }
+.emoji-field span{ position: absolute; bottom: -10%; font-size: 1.6rem; opacity: 0; animation-name: rise; animation-timing-function: linear; animation-iteration-count: infinite; }
+@keyframes rise{
+  0%{ transform: translateY(0) rotate(0deg); opacity: 0; }
+  10%{ opacity: 0.7; }
+  90%{ opacity: 0.5; }
+  100%{ transform: translateY(-115vh) rotate(25deg); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce){ .blob, .emoji-field span{ animation: none !important; } }
+@media (max-width: 480px){
+  .blob-1{ width: 260px; height: 260px; }
+  .blob-2{ width: 240px; height: 240px; }
+  .blob-3{ width: 190px; height: 190px; }
+}
 
-  .reaction{
-    position:absolute;
-    bottom:-10px;
-    left:-6px;
-    background:#fff;
-    border-radius:50%;
-    width:22px;height:22px;
-    font-size:13px;
-    display:flex;align-items:center;justify-content:center;
-    box-shadow:0 1px 3px rgba(0,0,0,.25);
-    transform:scale(0);
-    animation:reactPop .35s cubic-bezier(.34,1.56,.64,1) forwards;
-  }
-  @keyframes reactPop{ to{transform:scale(1);} }
+.page{
+  position: relative; z-index: 1; min-height: 100vh;
+  width: 100%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 6vh 5vw; text-align: center; gap: 1.6rem;
+}
+.view{ display: none; }
+.view.active{ display: flex; flex-direction: column; align-items: center; width: 100%; }
 
-  #starter-day{
-    text-align:center; color:var(--ig-gray-text); font-size:12px;
-    margin:6px 0 14px;
-  }
-  #starter-profile{
-    display:flex; flex-direction:column; align-items:center; margin:10px 0 22px;
-  }
-  #starter-avatar{
-    width:90px;height:90px;border-radius:50%;
-    background:linear-gradient(45deg,#f9ce34,#ee2a7b 60%,#6228d7);
-    display:flex;align-items:center;justify-content:center;
-    color:#fff;font-weight:600;font-size:34px; margin-bottom:10px;
-  }
-  #starter-name{font-weight:600; font-size:16px;}
-  #starter-sub{color:var(--ig-gray-text); font-size:13px; margin-top:2px;}
+.glass{
+  background: var(--glass); border: 1px solid var(--glass-border);
+  backdrop-filter: blur(22px) saturate(140%); -webkit-backdrop-filter: blur(22px) saturate(140%);
+  border-radius: 28px; box-shadow: 0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
+}
+.card{ padding: clamp(1.6rem, 5vw, 3.2rem); max-width: 720px; width: 100%; }
 
-  /* ---------- Full-screen blocked takeover ---------- */
-  #blocked-screen{
-    position:absolute;
-    inset:0;
-    background:#fff;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    text-align:center;
-    padding:32px 34px 0;
-    opacity:0;
-    pointer-events:none;
-    transition:opacity .5s ease;
-    z-index:30;
-  }
-  #blocked-screen.show{ opacity:1; pointer-events:auto; }
-  #blocked-icon{
-    width:64px; height:64px; margin-bottom:22px;
-    opacity:0;
-    transform:scale(.6);
-    transition:opacity .5s ease .15s, transform .5s cubic-bezier(.34,1.56,.64,1) .15s;
-  }
-  #blocked-screen.show #blocked-icon{ opacity:1; transform:scale(1); }
-  #blocked-heading{
-    font-size:19px; font-weight:400; color:#262626; line-height:1.4;
-    max-width:280px;
-    opacity:0; transform:translateY(8px);
-    transition:opacity .45s ease .3s, transform .45s ease .3s;
-  }
-  #blocked-screen.show #blocked-heading{ opacity:1; transform:translateY(0); }
-  #blocked-sub{
-    font-size:14px; color:#8e8e8e; margin-top:14px; line-height:1.5; max-width:290px;
-    opacity:0; transform:translateY(8px);
-    transition:opacity .45s ease .45s, transform .45s ease .45s;
-  }
-  #blocked-screen.show #blocked-sub{ opacity:1; transform:translateY(0); }
-  #blocked-link{
-    margin-top:22px; color:var(--ig-blue); font-size:14px; text-decoration:none; font-weight:500;
-    opacity:0; transition:opacity .45s ease .6s;
-  }
-  #blocked-screen.show #blocked-link{ opacity:1; }
+.eyebrow{ letter-spacing: 0.28em; text-transform: uppercase; font-size: 0.72rem; color: var(--gold); font-weight: 500; margin: 0 0 0.6rem; }
+h1{
+  font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: clamp(2.1rem, 6vw, 3.4rem); line-height: 1.08; margin: 0 0 0.5rem;
+  background: linear-gradient(95deg, var(--pink), var(--gold) 55%, var(--cyan));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+h2{ font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: clamp(1.3rem, 3.2vw, 1.8rem); margin: 0 0 1rem; color: var(--ink); }
+.name-emojis{ font-size: clamp(1.8rem, 6vw, 3rem); letter-spacing: 0.05em; margin: 0.4rem 0 1.2rem; filter: drop-shadow(0 4px 18px rgba(255,79,163,0.35)); }
+p{ font-size: clamp(0.95rem, 1.6vw, 1.08rem); line-height: 1.65; color: var(--ink-dim); margin: 0 0 1.4rem; font-weight: 300; }
 
-  #input-disabled-note{
-    text-align:center; color:var(--ig-gray-text); font-size:12.5px;
-    padding:10px 20px 4px;
-  }
+.btn{
+  display: inline-flex; align-items: center; gap: 0.5rem; font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 0.98rem;
+  color: var(--ink); text-decoration: none; padding: 0.85rem 1.8rem; border-radius: 999px; border: 1px solid var(--glass-border);
+  background: var(--glass-strong); cursor: pointer; transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease; backdrop-filter: blur(14px);
+}
+.btn:hover{ transform: translateY(-3px); box-shadow: 0 10px 26px rgba(255,79,163,0.28); background: rgba(255,255,255,0.22); }
+.btn:active{ transform: translateY(-1px); }
+.btn-primary{ background: linear-gradient(95deg, var(--pink), var(--gold)); border: none; color: #1a0b2e; font-weight: 700; }
+.btn-primary:hover{ box-shadow: 0 10px 30px rgba(255,200,87,0.35); }
+.nav-back{ position: fixed; top: 1.6rem; left: 1.6rem; z-index: 5; font-size: 0.88rem; padding: 0.6rem 1.1rem; }
 
-  /* ---------- Input bar ---------- */
-  #inputbar{
-    display:flex; align-items:center; gap:8px;
-    padding:8px 10px; border-top:1px solid var(--ig-border);
-    flex-shrink:0; background:#fff;
-  }
-  #camera-icon,#mic-icon,#img-icon{width:26px;height:26px; flex-shrink:0; opacity:.85;}
-  #msg-input{
-    flex:1;
-    border:1px solid var(--ig-border);
-    border-radius:20px;
-    padding:8px 14px;
-    font-size:14.5px;
-    outline:none;
-    background:#fafafa;
-  }
-  #msg-input:disabled{color:#bbb; background:#f2f2f2;}
-  #send-btn{
-    color:var(--ig-blue); font-weight:600; font-size:14.5px;
-    border:none; background:none; padding:4px 6px; cursor:pointer;
-    flex-shrink:0;
-  }
-  #send-btn:disabled{opacity:.4; cursor:default;}
+.letter{ text-align: left; }
+.letter p{ text-align: left; }
+.signoff{ font-family: 'Baloo 2', sans-serif; font-weight: 700; color: var(--gold); font-size: 1.05rem; margin: 1.4rem 0 1.8rem; text-align: left; }
 
-  /* ---------- Seen tick row for last own message ---------- */
-  .seen-row{
-    display:flex; justify-content:flex-end; align-items:center; gap:5px;
-    margin-top:2px; padding-right:4px;
-  }
-  .seen-avatar{
-    width:14px;height:14px;border-radius:50%;
-    background:linear-gradient(45deg,#f9ce34,#ee2a7b 60%,#6228d7);
-    opacity:0; transition:opacity .35s ease;
-  }
-  .seen-avatar.show{opacity:1;}
-  .seen-text{font-size:11px; color:var(--ig-gray-text); opacity:0; transition:opacity .35s ease;}
-  .seen-text.show{opacity:1;}
+.chip-row{ display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: flex-start; margin: 0.4rem 0 1.6rem; }
+.chip{
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  font-size: 0.85rem; font-weight: 500;
+  padding: 0.5rem 0.95rem; border-radius: 999px;
+  background: var(--glass-strong); border: 1px solid var(--glass-border);
+  white-space: nowrap;
+}
+
+.cake-wrap{ margin: 0.4rem 0 1.4rem; display: flex; justify-content: center; width: 100%; }
+.candle-btn{ background: none; border: none; cursor: pointer; font-size: clamp(2.6rem, 9vw, 3.4rem); line-height: 1; transition: transform 0.2s ease; filter: drop-shadow(0 6px 14px rgba(255,200,87,0.3)); }
+.candle-btn:hover{ transform: scale(1.06); }
+.candle-btn:active{ transform: scale(0.96); }
+.hint{ font-size: 0.78rem; color: var(--ink-dim); margin-top: 0.4rem; letter-spacing: 0.02em; text-align: center; width: 100%; }
+
+footer{ position: relative; z-index: 1; text-align: center; font-size: 0.78rem; color: rgba(245,243,255,0.4); padding: 1.5rem 1rem 2rem; }
+
+@media (max-width: 420px){
+  .btn{ font-size: 0.9rem; padding: 0.75rem 1.4rem; }
+  .nav-back{ top: 1rem; left: 1rem; }
+  .chip{ font-size: 0.78rem; padding: 0.45rem 0.8rem; }
+}
 </style>
 </head>
 <body>
 
-<div id="phone">
-
-  <div id="header">
-    <svg id="back-arrow" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
-    <div id="avatar-wrap">
-      <div id="avatar">A</div>
-      <div id="online-dot"></div>
-    </div>
-    <div id="header-text">
-      <div id="header-name">ananya._x</div>
-      <div id="header-status">Active now</div>
-    </div>
-    <div id="header-icons">
-      <svg viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="1.8"><path d="M22 16.92V21a1 1 0 01-1.09 1A19 19 0 013 4.09 1 1 0 014 3h4.09a1 1 0 011 .75l1 4a1 1 0 01-.29 1L8.5 10.5a14 14 0 006 6l1.75-1.3a1 1 0 011-.24l4 1a1 1 0 01.75 1z"/></svg>
-      <svg viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="1.8"><rect x="3" y="7" width="14" height="10" rx="2"/><path d="M21 8l-4 3 4 3V8z"/></svg>
-    </div>
+  <div class="bg-layer">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+    <div class="emoji-field" aria-hidden="true"></div>
   </div>
 
-  <div id="thread">
-    <div id="starter-day">Today 4:12 PM</div>
-    <div id="starter-profile">
-      <div id="starter-avatar">A</div>
-      <div id="starter-name">ananya._x</div>
-      <div id="starter-sub">Instagram · Message requests</div>
-    </div>
-    <!-- messages injected here -->
-  </div>
+  <a class="btn nav-back glass" href="#home" id="backBtn" style="display:none;">← back</a>
 
-  <div id="input-disabled-note" style="display:none;">You can't reply to this conversation.</div>
+  <!-- PAGE 1: HERO -->
+  <main class="page">
+    <section id="view-home" class="view active">
+      <div class="glass card">
+        <p class="eyebrow">Another trip around the sun</p>
+        <h1>Happy Birthday</h1>
+        <div class="name-emojis">KARAN</div>
+        <p>
+          One more year of being loud, hilarious, and somehow the most
+          reliable person in every group chat. Today's entire purpose is
+          celebrating that exact combination. Yes, that's you, KARAN.
+        </p>
+        <a class="btn btn-primary" href="#wishes" data-confetti>Open your gift 🎁</a>
+      </div>
+    </section>
 
-  <div id="inputbar">
-    <svg id="camera-icon" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="1.8"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
-    <input id="msg-input" type="text" placeholder="Message..." autocomplete="off">
-    <svg id="img-icon" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-    <button id="send-btn" disabled>Send</button>
-  </div>
+    <!-- PAGE 2: LETTER -->
+    <section id="view-wishes" class="view">
+      <div class="glass card letter">
+        <p class="eyebrow">A little something for you</p>
+        <h2>Dear Karan,</h2>
 
-  <div id="blocked-screen">
-    <svg id="blocked-icon" viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="1.3">
-      <circle cx="12" cy="12" r="10.5"/>
-      <path d="M4 4l16 16" stroke-width="1.3"/>
-      <rect x="7" y="8" width="10" height="8" rx="1.4"/>
-      <circle cx="12" cy="12" r="2.4"/>
-    </svg>
-    <div id="blocked-heading">Sorry, this page isn't available.</div>
-    <div id="blocked-sub">The link you followed may be broken, or the page may have been removed.</div>
-    <a id="blocked-link" href="#">Go back to Instagram.</a>
-  </div>
+        <p>
+          Another year down, and somehow you've made every single one of them
+          louder and better for the people around you. This is just a small
+          note to say the jokes, the plans you talk everyone into, and the
+          way you always show up — none of that goes unnoticed.
+        </p>
+        <p>
+          Here's hoping this year brings you exactly the kind of stories
+          you'll still be telling at your next birthday. Blow out the
+          candle, make it count.
+        </p>
 
-</div>
+        <div class="chip-row">
+          <span class="chip glass">🎂 a year wiser</span>
+          <span class="chip glass">🎉 chaos certified</span>
+          <span class="chip glass">🫶 secretly soft</span>
+          <span class="chip glass">😂 loudest laugh</span>
+        </div>
 
-<audio id="prank-audio" src="cat-laugh-meme-1.mp3" preload="auto"></audio>
+        <div class="cake-wrap">
+          <button class="candle-btn" aria-label="Blow out the candle and make a wish">🕯️</button>
+        </div>
+        <p class="hint">tap the candle to make a wish</p>
 
-<script>
-const thread = document.getElementById('thread');
-const input = document.getElementById('msg-input');
-const sendBtn = document.getElementById('send-btn');
-const avatar = document.getElementById('avatar');
-const onlineDot = document.getElementById('online-dot');
-const headerStatus = document.getElementById('header-status');
-const blockedScreen = document.getElementById('blocked-screen');
-const inputDisabledNote = document.getElementById('input-disabled-note');
-const inputbar = document.getElementById('inputbar');
-const prankAudio = document.getElementById('prank-audio');
+        <p class="signoff">With love, from everyone who puts up with you 💛</p>
+        <a class="btn btn-primary" href="#home" data-confetti>Replay the magic ↻</a>
+      </div>
+    </section>
+  </main>
 
-let pranked = false;
+  <footer id="pageFooter">KARAN — today's main character</footer>
 
-input.addEventListener('input', () => {
-  sendBtn.disabled = input.value.trim().length === 0;
-});
-input.addEventListener('keydown', (e) => {
-  if(e.key === 'Enter') sendMessage();
-});
-sendBtn.addEventListener('click', sendMessage);
+  <script>
+    const NAME_EMOJIS = ["🎉","🎂","✨","🎈","🎇","🥳"];
 
-function scrollDown(){
-  thread.scrollTop = thread.scrollHeight;
-}
-
-function sendMessage(){
-  if(pranked) return;
-  const text = input.value.trim();
-  if(!text) return;
-  pranked = true;
-
-  // 1. Render sent bubble
-  const row = document.createElement('div');
-  row.className = 'row out';
-  const wrap = document.createElement('div');
-  wrap.className = 'bubble-wrap';
-  const bubble = document.createElement('div');
-  bubble.className = 'bubble';
-  bubble.textContent = text;
-  wrap.appendChild(bubble);
-  row.appendChild(wrap);
-  thread.appendChild(row);
-
-  const seenRow = document.createElement('div');
-  seenRow.className = 'seen-row';
-  seenRow.innerHTML = '<span class="seen-text">Seen</span><div class="seen-avatar"></div>';
-  thread.appendChild(seenRow);
-
-  input.value = '';
-  input.disabled = true;
-  sendBtn.disabled = true;
-  scrollDown();
-
-  const seenText = seenRow.querySelector('.seen-text');
-  const seenAvatar = seenRow.querySelector('.seen-avatar');
-
-  // 2. "Seen" after a short pause
-  setTimeout(() => {
-    seenText.classList.add('show');
-    seenAvatar.classList.add('show');
-    scrollDown();
-  }, 1300);
-
-  // 3. 😂 reaction on the message
-  setTimeout(() => {
-    const reaction = document.createElement('div');
-    reaction.className = 'reaction';
-    reaction.textContent = '😂';
-    wrap.appendChild(reaction);
-    scrollDown();
-  }, 2600);
-
-  // 4. Blocked
-  setTimeout(() => {
-    goBlocked();
-  }, 4400);
-}
-
-function goBlocked(){
-  avatar.classList.add('blocked');
-  onlineDot.style.opacity = '0';
-  headerStatus.textContent = 'Active 2h ago';
-  inputbar.style.display = 'none';
-  inputDisabledNote.style.display = 'block';
-  blockedScreen.classList.add('show');
-
-  // 5. Play the prank audio the moment the full-screen block takes over
-  prankAudio.play().catch(() => {
-    playFallbackSound();
-  });
-  prankAudio.onerror = playFallbackSound;
-}
-
-// Fallback tone, only used if cat-laugh-meme-1.mp3 can't be found/played
-let fallbackPlayed = false;
-function playFallbackSound(){
-  if(fallbackPlayed) return;
-  fallbackPlayed = true;
-  try{
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const now = ctx.currentTime;
-    for(let i=0;i<3;i++){
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'square';
-      const start = now + i*0.28;
-      osc.frequency.setValueAtTime(700 + i*120, start);
-      gain.gain.setValueAtTime(0.0001, start);
-      gain.gain.exponentialRampToValueAtTime(0.2, start+0.05);
-      gain.gain.exponentialRampToValueAtTime(0.0001, start+0.25);
-      osc.connect(gain).connect(ctx.destination);
-      osc.start(start);
-      osc.stop(start+0.28);
+    function seedEmojiField(count = 22){
+      const field = document.querySelector('.emoji-field');
+      if (!field) return;
+      field.innerHTML = '';
+      const unique = [...new Set(NAME_EMOJIS)];
+      for (let i = 0; i < count; i++){
+        const el = document.createElement('span');
+        el.textContent = unique[Math.floor(Math.random() * unique.length)];
+        el.style.left = Math.random() * 100 + 'vw';
+        el.style.fontSize = (1 + Math.random() * 1.6) + 'rem';
+        const duration = 10 + Math.random() * 14;
+        el.style.animationDuration = duration + 's';
+        el.style.animationDelay = (Math.random() * duration) + 's';
+        field.appendChild(el);
+      }
     }
-  }catch(e){ /* audio unsupported, silently ignore */ }
-}
-</script>
 
+    function burstConfetti(originEl){
+      const rect = originEl ? originEl.getBoundingClientRect() : { left: window.innerWidth/2, top: window.innerHeight/2, width:0, height:0 };
+      const originX = rect.left + rect.width/2;
+      const originY = rect.top + rect.height/2;
+      const unique = [...new Set(NAME_EMOJIS)];
+
+      for (let i = 0; i < 26; i++){
+        const el = document.createElement('span');
+        el.textContent = unique[Math.floor(Math.random() * unique.length)];
+        el.style.position = 'fixed';
+        el.style.left = originX + 'px';
+        el.style.top = originY + 'px';
+        el.style.fontSize = (1.1 + Math.random() * 1.3) + 'rem';
+        el.style.zIndex = 50;
+        el.style.pointerEvents = 'none';
+        el.style.willChange = 'transform, opacity';
+        document.body.appendChild(el);
+
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 120 + Math.random() * 220;
+        const dx = Math.cos(angle) * distance;
+        const dy = Math.sin(angle) * distance - 60;
+        const rotate = (Math.random() - 0.5) * 720;
+        const duration = 900 + Math.random() * 700;
+
+        el.animate([
+          { transform: 'translate(0,0) rotate(0deg)', opacity: 1 },
+          { transform: `translate(${dx}px, ${dy + 260}px) rotate(${rotate}deg)`, opacity: 0 }
+        ], { duration, easing: 'cubic-bezier(.2,.7,.3,1)', fill: 'forwards' });
+
+        setTimeout(() => el.remove(), duration + 50);
+      }
+    }
+
+    function initCandle(){
+      const btn = document.querySelector('.candle-btn');
+      const hint = document.querySelector('.hint');
+      if (!btn) return;
+      let blown = false;
+      btn.addEventListener('click', () => {
+        if (blown){
+          btn.textContent = '🕯️';
+          if (hint) hint.textContent = 'tap the candle to make a wish';
+          blown = false;
+          return;
+        }
+        btn.textContent = '💨';
+        blown = true;
+        burstConfetti(btn);
+        if (hint) hint.textContent = 'wish made ✨ tap again to relight';
+        setTimeout(() => { if (blown) btn.textContent = '🌫️'; }, 500);
+      });
+    }
+
+    // simple hash-based two-page routing within this single file
+    function showView(){
+      const hash = window.location.hash.replace('#', '') || 'home';
+      const home = document.getElementById('view-home');
+      const wishes = document.getElementById('view-wishes');
+      const backBtn = document.getElementById('backBtn');
+      if (hash === 'wishes'){
+        home.classList.remove('active');
+        wishes.classList.add('active');
+        backBtn.style.display = 'inline-flex';
+      } else {
+        wishes.classList.remove('active');
+        home.classList.add('active');
+        backBtn.style.display = 'none';
+      }
+      window.scrollTo(0, 0);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      seedEmojiField();
+      initCandle();
+      showView();
+      document.querySelectorAll('[data-confetti]').forEach(btn => {
+        btn.addEventListener('click', () => burstConfetti(btn));
+      });
+    });
+    window.addEventListener('hashchange', showView);
+  </script>
 </body>
 </html>
