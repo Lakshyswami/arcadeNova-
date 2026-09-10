@@ -1,78 +1,172 @@
 <!DOCTYPE html>
 <html lang="en">
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0f1117">
+
 <head>
   <meta charset="UTF-8">
+
   <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-  <meta name="theme-color" content="#0b0d12">
+  <meta name="theme-color" content="#0f1117">
   <meta name="mobile-web-app-capable" content="yes">
 
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="./manifest.json">
+
+  <!-- App title -->
   <title>Glass Calculator</title>
 
-  <link rel="stylesheet" href="style.css">
+  <!-- Calculator CSS -->
+  <link rel="stylesheet" href="./style.css">
 </head>
 
 <body>
 
   <div class="app">
 
+    <!-- HEADER -->
     <header class="header">
+
       <div>
         <div class="title">Calculator</div>
         <div class="small">Fast & Accurate</div>
       </div>
 
-      <button id="theme" class="theme-btn">☼</button>
+      <button id="theme" class="theme-btn">
+        ☼
+      </button>
+
     </header>
 
 
+    <!-- DISPLAY -->
     <section class="display">
 
       <div id="history" class="history"></div>
 
-      <div id="screen" class="screen">0</div>
+      <div id="screen" class="screen">
+        0
+      </div>
 
     </section>
 
 
+    <!-- CALCULATOR BUTTONS -->
     <section class="buttons">
 
-      <!-- Row 1 -->
-      <button class="btn function" data-action="clear">AC</button>
-      <button class="btn function" data-action="delete">⌫</button>
-      <button class="btn function" data-action="percent">%</button>
-      <button class="btn operator" data-value="/">÷</button>
+      <!-- ROW 1 -->
+      <button class="btn function"
+              data-action="clear">
+        AC
+      </button>
 
-      <!-- Row 2 -->
-      <button class="btn" data-value="7">7</button>
-      <button class="btn" data-value="8">8</button>
-      <button class="btn" data-value="9">9</button>
-      <button class="btn operator" data-value="*">×</button>
+      <button class="btn function"
+              data-action="delete">
+        ⌫
+      </button>
 
-      <!-- Row 3 -->
-      <button class="btn" data-value="4">4</button>
-      <button class="btn" data-value="5">5</button>
-      <button class="btn" data-value="6">6</button>
-      <button class="btn operator" data-value="-">−</button>
+      <button class="btn function"
+              data-action="percent">
+        %
+      </button>
 
-      <!-- Row 4 -->
-      <button class="btn" data-value="1">1</button>
-      <button class="btn" data-value="2">2</button>
-      <button class="btn" data-value="3">3</button>
-      <button class="btn operator" data-value="+">+</button>
+      <button class="btn operator"
+              data-value="/">
+        ÷
+      </button>
 
-      <!-- Row 5 -->
-      <button class="btn function" data-action="sign">±</button>
-      <button class="btn" data-value="0">0</button>
-      <button class="btn" data-action="decimal">.</button>
-      <button class="btn equals" data-action="equals">=</button>
+
+      <!-- ROW 2 -->
+      <button class="btn"
+              data-value="7">
+        7
+      </button>
+
+      <button class="btn"
+              data-value="8">
+        8
+      </button>
+
+      <button class="btn"
+              data-value="9">
+        9
+      </button>
+
+      <button class="btn operator"
+              data-value="*">
+        ×
+      </button>
+
+
+      <!-- ROW 3 -->
+      <button class="btn"
+              data-value="4">
+        4
+      </button>
+
+      <button class="btn"
+              data-value="5">
+        5
+      </button>
+
+      <button class="btn"
+              data-value="6">
+        6
+      </button>
+
+      <button class="btn operator"
+              data-value="-">
+        −
+      </button>
+
+
+      <!-- ROW 4 -->
+      <button class="btn"
+              data-value="1">
+        1
+      </button>
+
+      <button class="btn"
+              data-value="2">
+        2
+      </button>
+
+      <button class="btn"
+              data-value="3">
+        3
+      </button>
+
+      <button class="btn operator"
+              data-value="+">
+        +
+      </button>
+
+
+      <!-- ROW 5 -->
+      <button class="btn function"
+              data-action="sign">
+        ±
+      </button>
+
+      <button class="btn"
+              data-value="0">
+        0
+      </button>
+
+      <button class="btn"
+              data-action="decimal">
+        .
+      </button>
+
+      <button class="btn equals"
+              data-action="equals">
+        =
+      </button>
 
     </section>
 
 
+    <!-- FOOTER -->
     <footer>
       Decimal-safe calculation
     </footer>
@@ -80,7 +174,29 @@
   </div>
 
 
-  <script src="script.js"></script>
+  <!-- MAIN JAVASCRIPT -->
+  <script src="./script.js"></script>
+
+
+  <!-- SERVICE WORKER -->
+  <script>
+    if ("serviceWorker" in navigator) {
+
+      window.addEventListener("load", function () {
+
+        navigator.serviceWorker
+          .register("./service-worker.js")
+          .then(function () {
+            console.log("Glass Calculator Service Worker registered.");
+          })
+          .catch(function (error) {
+            console.log("Service Worker registration failed:", error);
+          });
+
+      });
+
+    }
+  </script>
 
 </body>
 </html>
