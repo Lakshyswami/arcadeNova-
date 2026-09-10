@@ -1,0 +1,407 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  overflow: hidden;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  color: #ffffff;
+
+  background:
+    radial-gradient(
+      circle at 20% 10%,
+      #252d4a 0,
+      transparent 35%
+    ),
+    radial-gradient(
+      circle at 90% 90%,
+      #123746 0,
+      transparent 35%
+    ),
+    #080a0f;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+
+/* =========================
+   APP
+========================= */
+
+.app {
+  width: min(100%, 400px);
+  height: min(100%, 760px);
+
+  padding: 20px;
+
+  display: flex;
+  flex-direction: column;
+
+  background: rgba(255,255,255,0.035);
+
+  border: 1px solid rgba(255,255,255,0.09);
+
+  border-radius: 30px;
+
+  box-shadow:
+    0 20px 60px rgba(0,0,0,0.4);
+
+  /*
+    Moderate blur only.
+    Heavy blur can cause lag on some phones.
+  */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+.header {
+  height: 55px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: .4px;
+}
+
+.small {
+  margin-top: 4px;
+
+  font-size: 10px;
+
+  color: rgba(255,255,255,.45);
+}
+
+.theme-btn {
+  width: 40px;
+  height: 40px;
+
+  border-radius: 50%;
+
+  border: 1px solid rgba(255,255,255,.1);
+
+  color: white;
+
+  background: rgba(255,255,255,.07);
+
+  font-size: 18px;
+
+  cursor: pointer;
+
+  touch-action: manipulation;
+}
+
+
+/* =========================
+   DISPLAY
+========================= */
+
+.display {
+  flex: 1;
+
+  min-height: 150px;
+
+  padding: 15px 8px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+
+  overflow: hidden;
+}
+
+.history {
+  min-height: 22px;
+
+  width: 100%;
+
+  text-align: right;
+
+  color: rgba(255,255,255,.4);
+
+  font-size: 14px;
+
+  white-space: nowrap;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+}
+
+.screen {
+  width: 100%;
+
+  margin-top: 5px;
+
+  text-align: right;
+
+  font-size: clamp(42px, 12vw, 64px);
+
+  font-weight: 400;
+
+  letter-spacing: -2px;
+
+  white-space: nowrap;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+}
+
+
+/* =========================
+   BUTTON GRID
+========================= */
+
+.buttons {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, 1fr);
+
+  gap: 10px;
+}
+
+
+/* =========================
+   BUTTON
+========================= */
+
+.btn {
+  height: 68px;
+
+  border-radius: 20px;
+
+  border: 1px solid rgba(255,255,255,.09);
+
+  background:
+    rgba(255,255,255,.075);
+
+  color: white;
+
+  font-size: 22px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  touch-action: manipulation;
+
+  /*
+    Avoid expensive animations.
+  */
+  transition:
+    background .08s ease,
+    transform .06s ease;
+
+  /*
+    Small shadow only.
+  */
+  box-shadow:
+    0 5px 12px rgba(0,0,0,.14),
+    inset 0 1px 0 rgba(255,255,255,.05);
+}
+
+.btn:active {
+  transform: scale(.94);
+
+  background:
+    rgba(255,255,255,.16);
+}
+
+
+/* =========================
+   FUNCTION BUTTONS
+========================= */
+
+.function {
+  font-size: 17px;
+
+  background:
+    rgba(255,255,255,.055);
+}
+
+
+/* =========================
+   OPERATORS
+========================= */
+
+.operator {
+  background:
+    rgba(92,125,255,.20);
+}
+
+.operator:active {
+  background:
+    rgba(92,125,255,.35);
+}
+
+
+/* =========================
+   EQUAL
+========================= */
+
+.equals {
+  background:
+    rgba(48,180,255,.27);
+
+  font-size: 26px;
+}
+
+.equals:active {
+  background:
+    rgba(48,180,255,.42);
+}
+
+
+/* =========================
+   FOOTER
+========================= */
+
+footer {
+  height: 30px;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+
+  color: rgba(255,255,255,.3);
+
+  font-size: 9px;
+}
+
+
+/* =========================
+   LIGHT MODE
+========================= */
+
+body.light {
+  color: #111827;
+
+  background:
+    radial-gradient(
+      circle at 20% 10%,
+      #b9c9ef 0,
+      transparent 35%
+    ),
+    radial-gradient(
+      circle at 90% 90%,
+      #a9dbe4 0,
+      transparent 35%
+    ),
+    #eef3f8;
+}
+
+body.light .app {
+  background:
+    rgba(255,255,255,.38);
+
+  border-color:
+    rgba(0,0,0,.08);
+}
+
+body.light .small,
+body.light .history,
+body.light footer {
+  color: rgba(0,0,0,.45);
+}
+
+body.light .btn,
+body.light .theme-btn {
+  color: #111827;
+
+  background:
+    rgba(255,255,255,.45);
+
+  border-color:
+    rgba(0,0,0,.07);
+}
+
+body.light .operator {
+  background:
+    rgba(80,110,230,.16);
+}
+
+body.light .equals {
+  background:
+    rgba(40,160,220,.20);
+}
+
+
+/* =========================
+   SMALL PHONES
+========================= */
+
+@media (max-height: 650px) {
+
+  .app {
+    padding: 14px;
+    border-radius: 24px;
+  }
+
+  .display {
+    min-height: 110px;
+  }
+
+  .btn {
+    height: 56px;
+    border-radius: 17px;
+  }
+
+  .buttons {
+    gap: 7px;
+  }
+
+  footer {
+    height: 22px;
+  }
+}
+
+
+/* =========================
+   VERY SMALL WIDTH
+========================= */
+
+@media (max-width: 330px) {
+
+  .app {
+    padding: 12px;
+  }
+
+  .btn {
+    height: 57px;
+    font-size: 20px;
+  }
+
+  .screen {
+    font-size: 42px;
+  }
+}
