@@ -1,202 +1,399 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
-  <meta name="theme-color" content="#0f1117">
-  <meta name="mobile-web-app-capable" content="yes">
-
-  <!-- PWA Manifest -->
-  <link rel="manifest" href="./manifest.json">
-
-  <!-- App title -->
-  <title>Glass Calculator</title>
-
-  <!-- Calculator CSS -->
-  <link rel="stylesheet" href="./style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Photo Vault</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #111;
+    color: #eee;
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .card {
+    background: #1c1c1c;
+    border-radius: 14px;
+    padding: 30px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  h1 {
+    font-size: 20px;
+    margin: 0 0 20px;
+    text-align: center;
+  }
+  input[type="password"], input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background: #0e0e0e;
+    color: #eee;
+    font-size: 15px;
+    margin-bottom: 12px;
+  }
+  button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: #4a7fff;
+    color: white;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-bottom: 10px;
+  }
+  button:hover { background: #3a6fee; }
+  button.secondary {
+    background: #2a2a2a;
+    color: #eee;
+  }
+  button.secondary:hover { background: #3a3a3a; }
+  .error {
+    color: #ff5c5c;
+    font-size: 13px;
+    text-align: center;
+    margin: -6px 0 12px;
+    min-height: 16px;
+  }
+  #vault-screen { display: none; }
+  .vault-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .vault-header h1 { margin: 0; text-align: left; }
+  .logout-btn {
+    width: auto;
+    padding: 8px 14px;
+    font-size: 13px;
+    background: #2a2a2a;
+    margin: 0;
+  }
+  #upload-input { display: none; }
+  .upload-label {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    border: 2px dashed #444;
+    border-radius: 10px;
+    text-align: center;
+    color: #999;
+    cursor: pointer;
+    margin-bottom: 20px;
+    font-size: 14px;
+  }
+  .upload-label:hover { border-color: #4a7fff; color: #4a7fff; }
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .photo-item {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #0e0e0e;
+  }
+  .photo-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .photo-actions {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    background: rgba(0,0,0,0.7);
+  }
+  .photo-actions button {
+    flex: 1;
+    margin: 0;
+    padding: 6px;
+    font-size: 11px;
+    border-radius: 0;
+    background: transparent;
+  }
+  .photo-actions button:hover { background: rgba(255,255,255,0.1); }
+  .empty-state {
+    text-align: center;
+    color: #666;
+    font-size: 13px;
+    padding: 30px 0;
+  }
+  .setup-note {
+    font-size: 12px;
+    color: #777;
+    text-align: center;
+    margin-top: 10px;
+  }
+</style>
 </head>
-
 <body>
 
-  <div class="app">
+<div class="card" id="lock-screen">
+  <h1 id="lock-title">Enter password</h1>
+  <input type="password" id="password-input" placeholder="Password" autofocus>
+  <div class="error" id="lock-error"></div>
+  <button id="unlock-btn">Unlock</button>
+  <p class="setup-note" id="setup-note" style="display:none;">First time? This will set your vault password.</p>
+</div>
 
-    <!-- HEADER -->
-    <header class="header">
-
-      <div>
-        <div class="title">Calculator</div>
-        <div class="small">Fast & Accurate</div>
-      </div>
-
-      <button id="theme" class="theme-btn">
-        ☼
-      </button>
-
-    </header>
-
-
-    <!-- DISPLAY -->
-    <section class="display">
-
-      <div id="history" class="history"></div>
-
-      <div id="screen" class="screen">
-        0
-      </div>
-
-    </section>
-
-
-    <!-- CALCULATOR BUTTONS -->
-    <section class="buttons">
-
-      <!-- ROW 1 -->
-      <button class="btn function"
-              data-action="clear">
-        AC
-      </button>
-
-      <button class="btn function"
-              data-action="delete">
-        ⌫
-      </button>
-
-      <button class="btn function"
-              data-action="percent">
-        %
-      </button>
-
-      <button class="btn operator"
-              data-value="/">
-        ÷
-      </button>
-
-
-      <!-- ROW 2 -->
-      <button class="btn"
-              data-value="7">
-        7
-      </button>
-
-      <button class="btn"
-              data-value="8">
-        8
-      </button>
-
-      <button class="btn"
-              data-value="9">
-        9
-      </button>
-
-      <button class="btn operator"
-              data-value="*">
-        ×
-      </button>
-
-
-      <!-- ROW 3 -->
-      <button class="btn"
-              data-value="4">
-        4
-      </button>
-
-      <button class="btn"
-              data-value="5">
-        5
-      </button>
-
-      <button class="btn"
-              data-value="6">
-        6
-      </button>
-
-      <button class="btn operator"
-              data-value="-">
-        −
-      </button>
-
-
-      <!-- ROW 4 -->
-      <button class="btn"
-              data-value="1">
-        1
-      </button>
-
-      <button class="btn"
-              data-value="2">
-        2
-      </button>
-
-      <button class="btn"
-              data-value="3">
-        3
-      </button>
-
-      <button class="btn operator"
-              data-value="+">
-        +
-      </button>
-
-
-      <!-- ROW 5 -->
-      <button class="btn function"
-              data-action="sign">
-        ±
-      </button>
-
-      <button class="btn"
-              data-value="0">
-        0
-      </button>
-
-      <button class="btn"
-              data-action="decimal">
-        .
-      </button>
-
-      <button class="btn equals"
-              data-action="equals">
-        =
-      </button>
-
-    </section>
-
-
-    <!-- FOOTER -->
-    <footer>
-      Decimal-safe calculation
-    </footer>
-
+<div class="card" id="vault-screen">
+  <div class="vault-header">
+    <h1>My Photo Vault</h1>
+    <button class="logout-btn" id="lock-again-btn">Lock</button>
   </div>
 
+  <button class="secondary" id="change-pass-btn" style="margin-bottom: 16px;">Change password</button>
 
-  <!-- MAIN JAVASCRIPT -->
-  <script src="./script.js"></script>
+  <div id="change-pass-panel" style="display:none; background:#0e0e0e; border-radius:10px; padding:14px; margin-bottom:16px;">
+    <input type="password" id="current-pass-input" placeholder="Current password">
+    <input type="password" id="new-pass-input" placeholder="New password">
+    <input type="password" id="confirm-pass-input" placeholder="Confirm new password">
+    <div class="error" id="change-pass-error"></div>
+    <button id="save-pass-btn">Save new password</button>
+    <button class="secondary" id="cancel-pass-btn">Cancel</button>
+  </div>
 
+  <input type="file" id="upload-input" accept="image/*" multiple>
+  <label for="upload-input" class="upload-label">Tap to add photos</label>
 
-  <!-- SERVICE WORKER -->
-  <script>
-    if ("serviceWorker" in navigator) {
+  <div class="gallery" id="gallery"></div>
+  <div class="empty-state" id="empty-state">No photos yet. Add one above.</div>
+</div>
 
-      window.addEventListener("load", function () {
+<script>
+  // ---- Storage keys ----
+  const PASS_KEY = 'vault_password_hash';
+  const PHOTOS_KEY = 'vault_photos';
 
-        navigator.serviceWorker
-          .register("./service-worker.js")
-          .then(function () {
-            console.log("Glass Calculator Service Worker registered.");
-          })
-          .catch(function (error) {
-            console.log("Service Worker registration failed:", error);
-          });
-
-      });
-
+  // Simple hash so the raw password isn't sitting in localStorage as plain text.
+  // NOTE: this is NOT strong encryption. For a real app, replace this with
+  // proper auth + server-side storage or a vetted crypto library.
+  function simpleHash(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = ((hash << 5) - hash) + str.charCodeAt(i);
+      hash |= 0;
     }
-  </script>
+    return hash.toString();
+  }
+
+  function getStoredHash() {
+    return localStorage.getItem(PASS_KEY);
+  }
+
+  function getPhotos() {
+    const raw = localStorage.getItem(PHOTOS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  }
+
+  function savePhotos(photos) {
+    localStorage.setItem(PHOTOS_KEY, JSON.stringify(photos));
+  }
+
+  // ---- Elements ----
+  const lockScreen = document.getElementById('lock-screen');
+  const vaultScreen = document.getElementById('vault-screen');
+  const passwordInput = document.getElementById('password-input');
+  const lockError = document.getElementById('lock-error');
+  const unlockBtn = document.getElementById('unlock-btn');
+  const lockTitle = document.getElementById('lock-title');
+  const setupNote = document.getElementById('setup-note');
+  const uploadInput = document.getElementById('upload-input');
+  const gallery = document.getElementById('gallery');
+  const emptyState = document.getElementById('empty-state');
+  const lockAgainBtn = document.getElementById('lock-again-btn');
+
+  // ---- Setup vs login mode ----
+  function initLockScreen() {
+    if (!getStoredHash()) {
+      lockTitle.textContent = 'Create a password';
+      setupNote.style.display = 'block';
+      unlockBtn.textContent = 'Set password';
+    } else {
+      lockTitle.textContent = 'Enter password';
+      setupNote.style.display = 'none';
+      unlockBtn.textContent = 'Unlock';
+    }
+  }
+
+  function tryUnlock() {
+    const val = passwordInput.value;
+    if (!val) {
+      lockError.textContent = 'Enter a password first';
+      return;
+    }
+    const storedHash = getStoredHash();
+    if (!storedHash) {
+      // first time setup
+      localStorage.setItem(PASS_KEY, simpleHash(val));
+      enterVault();
+    } else if (simpleHash(val) === storedHash) {
+      enterVault();
+    } else {
+      lockError.textContent = 'Wrong password. Try again.';
+      passwordInput.value = '';
+    }
+  }
+
+  function enterVault() {
+    lockError.textContent = '';
+    passwordInput.value = '';
+    lockScreen.style.display = 'none';
+    vaultScreen.style.display = 'block';
+    renderGallery();
+  }
+
+  function lockVault() {
+    vaultScreen.style.display = 'none';
+    lockScreen.style.display = 'block';
+    initLockScreen();
+    passwordInput.focus();
+  }
+
+  // ---- Photo handling ----
+  uploadInput.addEventListener('change', (e) => {
+    const files = Array.from(e.target.files);
+    let remaining = files.length;
+    if (remaining === 0) return;
+
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const photos = getPhotos();
+        photos.push({ id: Date.now() + Math.random(), data: ev.target.result, name: file.name });
+        savePhotos(photos);
+        remaining--;
+        if (remaining === 0) renderGallery();
+      };
+      reader.readAsDataURL(file);
+    });
+    uploadInput.value = '';
+  });
+
+  function renderGallery() {
+    const photos = getPhotos();
+    gallery.innerHTML = '';
+    emptyState.style.display = photos.length === 0 ? 'block' : 'none';
+
+    photos.forEach((photo) => {
+      const item = document.createElement('div');
+      item.className = 'photo-item';
+
+      const img = document.createElement('img');
+      img.src = photo.data;
+      item.appendChild(img);
+
+      const actions = document.createElement('div');
+      actions.className = 'photo-actions';
+
+      const downloadBtn = document.createElement('button');
+      downloadBtn.textContent = 'Download';
+      downloadBtn.onclick = () => downloadPhoto(photo);
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.textContent = 'Delete';
+      deleteBtn.onclick = () => deletePhoto(photo.id);
+
+      actions.appendChild(downloadBtn);
+      actions.appendChild(deleteBtn);
+      item.appendChild(actions);
+
+      gallery.appendChild(item);
+    });
+  }
+
+  function downloadPhoto(photo) {
+    const a = document.createElement('a');
+    a.href = photo.data;
+    a.download = photo.name || 'photo.jpg';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  function deletePhoto(id) {
+    const photos = getPhotos().filter(p => p.id !== id);
+    savePhotos(photos);
+    renderGallery();
+  }
+
+  // ---- Change password ----
+  const changePassBtn = document.getElementById('change-pass-btn');
+  const changePassPanel = document.getElementById('change-pass-panel');
+  const currentPassInput = document.getElementById('current-pass-input');
+  const newPassInput = document.getElementById('new-pass-input');
+  const confirmPassInput = document.getElementById('confirm-pass-input');
+  const changePassError = document.getElementById('change-pass-error');
+  const savePassBtn = document.getElementById('save-pass-btn');
+  const cancelPassBtn = document.getElementById('cancel-pass-btn');
+
+  changePassBtn.addEventListener('click', () => {
+    changePassPanel.style.display = 'block';
+    changePassError.textContent = '';
+    currentPassInput.value = '';
+    newPassInput.value = '';
+    confirmPassInput.value = '';
+    currentPassInput.focus();
+  });
+
+  cancelPassBtn.addEventListener('click', () => {
+    changePassPanel.style.display = 'none';
+  });
+
+  savePassBtn.addEventListener('click', () => {
+    const current = currentPassInput.value;
+    const next = newPassInput.value;
+    const confirm = confirmPassInput.value;
+
+    if (!current || !next || !confirm) {
+      changePassError.textContent = 'Fill in all three fields';
+      return;
+    }
+    if (simpleHash(current) !== getStoredHash()) {
+      changePassError.textContent = 'Current password is wrong';
+      return;
+    }
+    if (next.length < 4) {
+      changePassError.textContent = 'New password must be at least 4 characters';
+      return;
+    }
+    if (next !== confirm) {
+      changePassError.textContent = 'New passwords do not match';
+      return;
+    }
+
+    localStorage.setItem(PASS_KEY, simpleHash(next));
+    changePassPanel.style.display = 'none';
+    changePassError.textContent = '';
+  });
+
+  // ---- Events ----
+  unlockBtn.addEventListener('click', tryUnlock);
+  passwordInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') tryUnlock();
+  });
+  lockAgainBtn.addEventListener('click', lockVault);
+
+  // ---- Init ----
+  initLockScreen();
+</script>
 
 </body>
 </html>
