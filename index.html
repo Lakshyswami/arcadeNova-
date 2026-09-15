@@ -159,15 +159,13 @@
     <button class="logout-btn" id="lock-again-btn">Lock</button>
   </div>
 
-  <button class="secondary" id="change-pass-btn" style="margin-bottom: 16px;">Change password</button>
+  <button class="secondary" id="change-pass-btn" style="margin-bottom: 16px;">Where do I change the password?</button>
 
-  <div id="change-pass-panel" style="display:none; background:#0e0e0e; border-radius:10px; padding:14px; margin-bottom:16px;">
-    <input type="password" id="current-pass-input" placeholder="Current password">
-    <input type="password" id="new-pass-input" placeholder="New password">
-    <input type="password" id="confirm-pass-input" placeholder="Confirm new password">
-    <div class="error" id="change-pass-error"></div>
-    <button id="save-pass-btn">Save new password</button>
-    <button class="secondary" id="cancel-pass-btn">Cancel</button>
+  <div id="change-pass-panel" style="display:none; background:#0e0e0e; border-radius:10px; padding:14px; margin-bottom:16px; font-size:13px; color:#aaa;">
+    Open this HTML file in a text editor, find the line near the top of the script that says:<br><br>
+    <code style="color:#4a7fff;">const VAULT_PASSWORD = "";</code><br><br>
+    Change the text inside the quotes to your new password, save the file, and reload the page.
+    <button class="secondary" id="cancel-pass-btn" style="margin-top:12px;">Close</button>
   </div>
 
   <input type="file" id="upload-input" accept="image/*" multiple>
@@ -178,25 +176,11 @@
 </div>
 
 <script>
-  // ---- Storage keys ----
-  const PASS_KEY = 'vault_password_hash';
+  // ---- Vault password ----
+  // Change this value directly to set/change the vault password.
+  const VAULT_PASSWORD = "1234567890";
+
   const PHOTOS_KEY = 'vault_photos';
-
-  // Simple hash so the raw password isn't sitting in localStorage as plain text.
-  // NOTE: this is NOT strong encryption. For a real app, replace this with
-  // proper auth + server-side storage or a vetted crypto library.
-  function simpleHash(str) {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      hash = ((hash << 5) - hash) + str.charCodeAt(i);
-      hash |= 0;
-    }
-    return hash.toString();
-  }
-
-  function getStoredHash() {
-    return localStorage.getItem(PASS_KEY);
-  }
 
   function getPhotos() {
     const raw = localStorage.getItem(PHOTOS_KEY);
@@ -220,17 +204,11 @@
   const emptyState = document.getElementById('empty-state');
   const lockAgainBtn = document.getElementById('lock-again-btn');
 
-  // ---- Setup vs login mode ----
+  // ---- Lock screen ----
   function initLockScreen() {
-    if (!getStoredHash()) {
-      lockTitle.textContent = 'Create a password';
-      setupNote.style.display = 'block';
-      unlockBtn.textContent = 'Set password';
-    } else {
-      lockTitle.textContent = 'Enter password';
-      setupNote.style.display = 'none';
-      unlockBtn.textContent = 'Unlock';
-    }
+    lockTitle.textContent = 'Enter password';
+    setupNote.style.display = 'none';
+    unlockBtn.textContent = 'Unlock';
   }
 
   function tryUnlock() {
@@ -239,12 +217,7 @@
       lockError.textContent = 'Enter a password first';
       return;
     }
-    const storedHash = getStoredHash();
-    if (!storedHash) {
-      // first time setup
-      localStorage.setItem(PASS_KEY, simpleHash(val));
-      enterVault();
-    } else if (simpleHash(val) === storedHash) {
+    if (val === VAULT_PASSWORD) {
       enterVault();
     } else {
       lockError.textContent = 'Wrong password. Try again.';
@@ -334,54 +307,17 @@
     renderGallery();
   }
 
-  // ---- Change password ----
+  // ---- Change password info panel ----
   const changePassBtn = document.getElementById('change-pass-btn');
   const changePassPanel = document.getElementById('change-pass-panel');
-  const currentPassInput = document.getElementById('current-pass-input');
-  const newPassInput = document.getElementById('new-pass-input');
-  const confirmPassInput = document.getElementById('confirm-pass-input');
-  const changePassError = document.getElementById('change-pass-error');
-  const savePassBtn = document.getElementById('save-pass-btn');
   const cancelPassBtn = document.getElementById('cancel-pass-btn');
 
   changePassBtn.addEventListener('click', () => {
     changePassPanel.style.display = 'block';
-    changePassError.textContent = '';
-    currentPassInput.value = '';
-    newPassInput.value = '';
-    confirmPassInput.value = '';
-    currentPassInput.focus();
   });
 
   cancelPassBtn.addEventListener('click', () => {
     changePassPanel.style.display = 'none';
-  });
-
-  savePassBtn.addEventListener('click', () => {
-    const current = currentPassInput.value;
-    const next = newPassInput.value;
-    const confirm = confirmPassInput.value;
-
-    if (!current || !next || !confirm) {
-      changePassError.textContent = 'Fill in all three fields';
-      return;
-    }
-    if (simpleHash(current) !== getStoredHash()) {
-      changePassError.textContent = 'Current password is wrong';
-      return;
-    }
-    if (next.length < 4) {
-      changePassError.textContent = 'New password must be at least 4 characters';
-      return;
-    }
-    if (next !== confirm) {
-      changePassError.textContent = 'New passwords do not match';
-      return;
-    }
-
-    localStorage.setItem(PASS_KEY, simpleHash(next));
-    changePassPanel.style.display = 'none';
-    changePassError.textContent = '';
   });
 
   // ---- Events ----
