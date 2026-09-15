@@ -37,7 +37,6 @@
     font-weight: 500;
   }
 
-  /* ---- Lock screen ---- */
   #lock-screen {
     width: 100%;
     max-width: 340px;
@@ -98,15 +97,7 @@
     font-weight: 600;
   }
   .btn-primary:hover { background: var(--accent-hover); }
-  .btn-ghost {
-    background: transparent;
-    color: var(--muted);
-    font-size: 13px;
-    padding: 8px;
-  }
-  .btn-ghost:hover { color: var(--text); }
 
-  /* ---- Vault screen ---- */
   #vault-screen {
     display: none;
     width: 100%;
@@ -175,14 +166,6 @@
     height: 100%;
     object-fit: cover;
     display: block;
-  }
-  .photo-item.pending img { opacity: 0.4; }
-  .pending-spinner {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
   .photo-actions {
     position: absolute;
@@ -276,18 +259,15 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
   import {
-    getFirestore, collection, addDoc, deleteDoc, doc,
-    onSnapshot, query, orderBy, serverTimestamp
-  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
-  import {
-    getStorage, ref, uploadBytes, getDownloadURL, deleteObject
-  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-storage.js";
+    getDatabase, ref, push, remove, onValue
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
 
   // ---- Vault password ----
   // Change this value directly to set/change the vault password.
   const VAULT_PASSWORD = "changeme123";
 
   // ---- Firebase setup ----
+  // Using Realtime Database only, so no need to enable Firestore or Storage.
   const firebaseConfig = {
     apiKey: "AIzaSyAB0MjSvpUVQlQy9PGW-P_G5orE3fjBZP0",
     authDomain: "prank-75eb8.firebaseapp.com",
@@ -299,9 +279,8 @@
   };
 
   const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const storage = getStorage(app);
-  const photosCollection = collection(db, "vault_photos");
+  const db = getDatabase(app);
+  const vaultRef = ref(db, 'vault_photos');
 
   // ---- Elements ----
   const lockScreen = document.getElementById('lock-screen');
@@ -316,7 +295,7 @@
   const statusLine = document.getElementById('status-line');
   const lockAgainBtn = document.getElementById('lock-again-btn');
 
-  let unsubscribe = null;
+  let stopListening = null;
 
   function tryUnlock() {
     const val = passwordInput.value;
@@ -337,19 +316,19 @@
   }
 
   function lockVault() {
-    if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+    if (stopListening) { stopListening(); stopListening = null; }
     vaultScreen.style.display = 'none';
     lockScreen.style.display = 'block';
     passwordInput.focus();
   }
 
   function startListening() {
-    const q = query(photosCollection, orderBy('createdAt', 'desc'));
-    unsubscribe = onSnapshot(q, (snapshot) => {
+    stopListening = onValue(vaultRef, (snapshot) => {
       const photos = [];
-      snapshot.forEach((docSnap) => {
-        photos.push({ id: docSnap.id, ...docSnap.data() });
+      snapshot.forEach((childSnap) => {
+        photos.push({ id: childSnap.key, ...childSnap.val() });
       });
+      photos.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
       renderGallery(photos);
     }, (err) => {
       statusLine.textContent = 'Could not load photos: ' + err.message;
@@ -368,7 +347,7 @@
       item.className = 'photo-item';
 
       const img = document.createElement('img');
-      img.src = photo.url;
+      img.src = photo.data;
       img.loading = 'lazy';
       item.appendChild(img);
 
@@ -395,58 +374,52 @@
     });
   }
 
-  async function downloadPhoto(photo) {
-    try {
-      const response = await fetch(photo.url);
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = blobUrl;
-      a.download = photo.name || 'photo.jpg';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(blobUrl);
-    } catch (err) {
-      statusLine.textContent = 'Download failed: ' + err.message;
-    }
+  function downloadPhoto(photo) {
+    const a = document.createElement('a');
+    a.href = photo.data;
+    a.download = photo.name || 'photo.jpg';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   }
 
   async function deletePhoto(photo) {
     try {
-      if (photo.storagePath) {
-        await deleteObject(ref(storage, photo.storagePath));
-      }
-      await deleteDoc(doc(db, 'vault_photos', photo.id));
+      await remove(ref(db, 'vault_photos/' + photo.id));
     } catch (err) {
       statusLine.textContent = 'Delete failed: ' + err.message;
     }
   }
 
-  uploadInput.addEventListener('change', async (e) => {
+  uploadInput.addEventListener('change', (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
 
     statusLine.textContent = 'Uploading ' + files.length + (files.length === 1 ? ' photo…' : ' photos…');
+    let remaining = files.length;
 
-    for (const file of files) {
-      try {
-        const storagePath = 'vault/' + Date.now() + '_' + Math.random().toString(36).slice(2) + '_' + file.name;
-        const storageRef = ref(storage, storagePath);
-        await uploadBytes(storageRef, file);
-        const url = await getDownloadURL(storageRef);
-        await addDoc(photosCollection, {
-          url,
-          storagePath,
-          name: file.name,
-          createdAt: serverTimestamp()
-        });
-      } catch (err) {
-        statusLine.textContent = 'Upload failed: ' + err.message;
-      }
-    }
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = async (ev) => {
+        try {
+          await push(vaultRef, {
+            data: ev.target.result,
+            name: file.name,
+            createdAt: Date.now()
+          });
+        } catch (err) {
+          statusLine.textContent = 'Upload failed: ' + err.message;
+        }
+        remaining--;
+        if (remaining === 0) statusLine.textContent = '';
+      };
+      reader.onerror = () => {
+        statusLine.textContent = 'Could not read one of the files';
+        remaining--;
+      };
+      reader.readAsDataURL(file);
+    });
 
-    statusLine.textContent = '';
     uploadInput.value = '';
   });
 
