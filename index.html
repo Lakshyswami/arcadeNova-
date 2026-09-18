@@ -1,434 +1,1167 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vault</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #12141a;
-    --surface: #1c1f28;
-    --surface-2: #0d0f14;
-    --line: #2a2e39;
-    --accent: #b8905c;
-    --accent-hover: #a37e4e;
-    --text: #ece9e2;
-    --muted: #888c98;
-    --danger: #c17862;
-  }
-  * { box-sizing: border-box; }
-  body {
-    font-family: 'Inter', -apple-system, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    margin: 0;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-  }
-  .wordmark {
-    font-family: 'Fraunces', serif;
-    font-style: italic;
-    font-weight: 500;
-  }
+    <meta charset="UTF-8">
 
-  #lock-screen {
-    width: 100%;
-    max-width: 340px;
-    text-align: center;
-  }
-  .lock-icon {
-    margin: 0 auto 28px;
-    width: 40px;
-    height: 40px;
-    opacity: 0.85;
-  }
-  #lock-screen h1 {
-    font-size: 30px;
-    margin: 0 0 6px;
-    font-weight: 500;
-  }
-  .lock-sub {
-    color: var(--muted);
-    font-size: 14px;
-    margin: 0 0 32px;
-  }
-  .field {
-    border-bottom: 1px solid var(--line);
-    margin-bottom: 22px;
-    transition: border-color 0.2s;
-  }
-  .field:focus-within { border-color: var(--accent); }
-  .field input {
-    width: 100%;
-    background: transparent;
-    border: none;
-    color: var(--text);
-    font-size: 16px;
-    font-family: inherit;
-    padding: 8px 2px;
-    text-align: center;
-    outline: none;
-  }
-  .field input::placeholder { color: var(--muted); }
-  .error {
-    color: var(--danger);
-    font-size: 13px;
-    min-height: 18px;
-    margin-bottom: 14px;
-  }
-  button {
-    font-family: inherit;
-    cursor: pointer;
-    border: none;
-  }
-  .btn-primary {
-    width: 100%;
-    padding: 13px;
-    border-radius: 8px;
-    background: var(--accent);
-    color: #17130d;
-    font-size: 15px;
-    font-weight: 600;
-  }
-  .btn-primary:hover { background: var(--accent-hover); }
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover"
+    >
 
-  #vault-screen {
-    display: none;
-    width: 100%;
-    max-width: 560px;
-  }
-  .vault-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 28px;
-  }
-  .vault-header h1 {
-    font-size: 24px;
-    margin: 0;
-    font-weight: 500;
-  }
-  .count-note {
-    color: var(--muted);
-    font-size: 13px;
-    margin-top: 3px;
-  }
-  .icon-btn {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    color: var(--muted);
-    width: 38px;
-    height: 38px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .icon-btn:hover { color: var(--text); border-color: #3a3f4d; }
+    <meta name="theme-color" content="#071426">
+    <meta name="color-scheme" content="dark">
 
-  #upload-input { display: none; }
-  .dropzone {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 18px;
-    border: 1px dashed var(--line);
-    border-radius: 10px;
-    color: var(--muted);
-    font-size: 14px;
-    cursor: pointer;
-    margin-bottom: 24px;
-    transition: border-color 0.2s, color 0.2s;
-  }
-  .dropzone:hover { border-color: var(--accent); color: var(--text); }
-  .dropzone svg { flex-shrink: 0; opacity: 0.8; }
+    <meta
+        name="description"
+        content="Zuvo — A premium offline personal music library."
+    >
 
-  .gallery {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-  }
-  .photo-item {
-    position: relative;
-    aspect-ratio: 1;
-    border-radius: 10px;
-    overflow: hidden;
-    background: var(--surface-2);
-  }
-  .photo-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-  .photo-actions {
-    position: absolute;
-    top: 6px;
-    right: 6px;
-    display: flex;
-    gap: 4px;
-    opacity: 0;
-    transition: opacity 0.15s;
-  }
-  .photo-item:hover .photo-actions,
-  .photo-item:focus-within .photo-actions { opacity: 1; }
-  .mini-btn {
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
-    background: rgba(13,15,20,0.75);
-    backdrop-filter: blur(2px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #eee;
-  }
-  .mini-btn:hover { background: rgba(13,15,20,0.95); }
-  .mini-btn.danger:hover { color: var(--danger); }
+    <title>Zuvo — Personal Music Library</title>
 
-  .empty-state {
-    text-align: center;
-    color: var(--muted);
-    font-size: 14px;
-    padding: 48px 0;
-  }
-  .status-line {
-    text-align: center;
-    color: var(--muted);
-    font-size: 13px;
-    margin-top: 18px;
-    min-height: 16px;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    * { transition: none !important; }
-  }
-</style>
+    <!-- Main stylesheet -->
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-<div id="lock-screen">
-  <svg class="lock-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="9" y="18" width="22" height="16" rx="3" stroke="#b8905c" stroke-width="1.6"/>
-    <path d="M14 18v-5a6 6 0 0 1 12 0v5" stroke="#b8905c" stroke-width="1.6"/>
-    <circle cx="20" cy="25" r="2" fill="#b8905c"/>
-  </svg>
-  <h1 class="wordmark">Vault</h1>
-  <p class="lock-sub">Your photos, kept quietly.</p>
-  <div class="field">
-    <input type="password" id="password-input" placeholder="Password" autofocus>
-  </div>
-  <div class="error" id="lock-error"></div>
-  <button class="btn-primary" id="unlock-btn">Unlock</button>
-</div>
+    <!-- =========================================
+         APP SHELL
+    ========================================== -->
+    <div id="app" class="app">
 
-<div id="vault-screen">
-  <div class="vault-header">
-    <div>
-      <h1 class="wordmark">Vault</h1>
-      <div class="count-note" id="count-note">No photos yet</div>
+        <!-- Background decoration -->
+        <div class="background-glow background-glow-one" aria-hidden="true"></div>
+        <div class="background-glow background-glow-two" aria-hidden="true"></div>
+
+        <!-- =====================================
+             HEADER
+        ====================================== -->
+        <header class="topbar">
+
+            <div class="brand">
+                <div class="brand-mark" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path
+                            d="M8 18.5V6.2L18 4v12.5"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        />
+                        <circle
+                            cx="5.5"
+                            cy="18.5"
+                            r="3"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                        />
+                        <circle
+                            cx="15.5"
+                            cy="16.5"
+                            r="3"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                        />
+                    </svg>
+                </div>
+
+                <div class="brand-text">
+                    <span class="brand-name">Zuvo</span>
+                    <span class="brand-tagline">Your music, your space.</span>
+                </div>
+            </div>
+
+            <div class="header-actions">
+
+                <button
+                    type="button"
+                    class="icon-button"
+                    id="headerSearchButton"
+                    aria-label="Search music"
+                    title="Search"
+                >
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <circle
+                            cx="11"
+                            cy="11"
+                            r="6.5"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                        />
+                        <path
+                            d="m16 16 5 5"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                        />
+                    </svg>
+                </button>
+
+                <button
+                    type="button"
+                    class="icon-button"
+                    id="headerAddButton"
+                    aria-label="Add music"
+                    title="Add music"
+                >
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path
+                            d="M12 5v14M5 12h14"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                        />
+                    </svg>
+                </button>
+
+            </div>
+        </header>
+
+
+        <!-- =====================================
+             SEARCH PANEL
+        ====================================== -->
+        <section
+            class="search-panel"
+            id="searchPanel"
+            aria-label="Search music"
+            hidden
+        >
+            <div class="search-box">
+
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <circle
+                        cx="11"
+                        cy="11"
+                        r="6.5"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                    />
+                    <path
+                        d="m16 16 5 5"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                    />
+                </svg>
+
+                <input
+                    type="search"
+                    id="searchInput"
+                    placeholder="Search songs, artists or albums..."
+                    autocomplete="off"
+                    spellcheck="false"
+                    aria-label="Search songs, artists or albums"
+                >
+
+                <button
+                    type="button"
+                    class="search-clear"
+                    id="clearSearchButton"
+                    aria-label="Clear search"
+                >
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path
+                            d="m7 7 10 10M17 7 7 17"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                        />
+                    </svg>
+                </button>
+
+            </div>
+        </section>
+
+
+        <!-- =====================================
+             MAIN CONTENT
+        ====================================== -->
+        <main class="main-content">
+
+            <!-- ================================
+                 HOME SECTION
+            ================================= -->
+            <section
+                class="page-section active"
+                id="homeSection"
+                data-section="home"
+            >
+
+                <div class="hero-card glass-card">
+
+                    <div class="hero-content">
+
+                        <span class="eyebrow">PERSONAL MUSIC LIBRARY</span>
+
+                        <h1>
+                            Your music.
+                            <span>Your atmosphere.</span>
+                        </h1>
+
+                        <p>
+                            Keep your favorite music close, private and available
+                            offline.
+                        </p>
+
+                        <button
+                            type="button"
+                            class="primary-button"
+                            id="heroAddMusicButton"
+                        >
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path
+                                    d="M12 5v14M5 12h14"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                />
+                            </svg>
+
+                            <span>Add Music</span>
+                        </button>
+
+                    </div>
+
+                    <div class="hero-visual" aria-hidden="true">
+
+                        <div class="hero-orb"></div>
+
+                        <div class="hero-disc">
+                            <div class="disc-center"></div>
+                        </div>
+
+                        <div class="hero-wave hero-wave-one"></div>
+                        <div class="hero-wave hero-wave-two"></div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Library stats -->
+                <div class="stats-grid">
+
+                    <div class="stat-card glass-card">
+
+                        <div class="stat-icon">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path
+                                    d="M9 18V6l10-2v12"
+                                    stroke="currentColor"
+                                    stroke-width="1.7"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
+                                <circle
+                                    cx="6"
+                                    cy="18"
+                                    r="3"
+                                    stroke="currentColor"
+                                    stroke-width="1.7"
+                                />
+                                <circle
+                                    cx="16"
+                                    cy="16"
+                                    r="3"
+                                    stroke="currentColor"
+                                    stroke-width="1.7"
+                                />
+                            </svg>
+                        </div>
+
+                        <div>
+                            <span class="stat-label">Songs</span>
+                            <strong id="songCount">0</strong>
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-card glass-card">
+
+                        <div class="stat-icon">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path
+                                    d="M20.8 8.8c0 5.1-8.8 10.2-8.8 10.2S3.2 13.9 3.2 8.8A4.8 4.8 0 0 1 12 6.1a4.8 4.8 0 0 1 8.8 2.7Z"
+                                    stroke="currentColor"
+                                    stroke-width="1.7"
+                                    stroke-linejoin="round"
+                                />
+                            </svg>
+                        </div>
+
+                        <div>
+                            <span class="stat-label">Favorites</span>
+                            <strong id="favoriteCount">0</strong>
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-card glass-card">
+
+                        <div class="stat-icon">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path
+                                    d="M4 7h16M4 12h16M4 17h10"
+                                    stroke="currentColor"
+                                    stroke-width="1.7"
+                                    stroke-linecap="round"
+                                />
+                            </svg>
+                        </div>
+
+                        <div>
+                            <span class="stat-label">Playlists</span>
+                            <strong id="playlistCount">0</strong>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Recently added -->
+                <div class="section-heading">
+
+                    <div>
+                        <span class="section-kicker">LIBRARY</span>
+                        <h2>Recently Added</h2>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="text-button"
+                        id="viewAllSongsButton"
+                    >
+                        View All
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path
+                                d="M5 12h14M13 6l6 6-6 6"
+                                stroke="currentColor"
+                                stroke-width="1.7"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            />
+                        </svg>
+                    </button>
+
+                </div>
+
+
+                <div
+                    class="song-list"
+                    id="recentSongsList"
+                    aria-live="polite"
+                ></div>
+
+
+                <!-- Empty library -->
+                <div
+                    class="empty-state glass-card"
+                    id="libraryEmptyState"
+                >
+
+                    <div class="empty-icon">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path
+                                d="M9 18V6l10-2v12"
+                                stroke="currentColor"
+                                stroke-width="1.7"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            />
+                            <circle
+                                cx="6"
+                                cy="18"
+                                r="3"
+                                stroke="currentColor"
+                                stroke-width="1.7"
+                            />
+                            <circle
+                                cx="16"
+                                cy="16"
+                                r="3"
+                                stroke="currentColor"
+                                stroke-width="1.7"
+                            />
+                        </svg>
+                    </div>
+
+                    <h3>Your library is empty</h3>
+
+                    <p>
+                        Add your local audio files to start building your
+                        personal collection.
+                    </p>
+
+                    <button
+                        type="button"
+                        class="secondary-button"
+                        id="emptyAddMusicButton"
+                    >
+                        Add Music
+                    </button>
+
+                </div>
+
+            </section>
+
+
+            <!-- ================================
+                 PLAYLISTS SECTION
+            ================================= -->
+            <section
+                class="page-section"
+                id="playlistsSection"
+                data-section="playlists"
+                hidden
+            >
+
+                <div class="page-header">
+
+                    <div>
+                        <span class="section-kicker">COLLECTIONS</span>
+                        <h1>Playlists</h1>
+                        <p>Organize your music your way.</p>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="primary-icon-button"
+                        id="createPlaylistButton"
+                        aria-label="Create playlist"
+                        title="Create playlist"
+                    >
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path
+                                d="M12 5v14M5 12h14"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                                stroke-linecap="round"
+                            />
+                        </svg>
+                    </button>
+
+                </div>
+
+
+                <div
+                    class="playlist-grid"
+                    id="playlistGrid"
+                ></div>
+
+
+                <div
+                    class="empty-state glass-card"
+                    id="playlistEmptyState"
+                    hidden
+                >
+
+                    <div class="empty-icon">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path
+                                d="M5 5h14M5 10h14M5 15h9"
+                                stroke="currentColor"
+                                stroke-width="1.7"
+                                stroke-linecap="round"
+                            />
+                            <path
+                                d="M17 15v5M14.5 17.5h5"
+                                stroke="currentColor"
+                                stroke-width="1.7"
+                                stroke-linecap="round"
+                            />
+                        </svg>
+                    </div>
+
+                    <h3>No playlists yet</h3>
+
+                    <p>
+                        Create a playlist and start organizing your collection.
+                    </p>
+
+                    <button
+                        type="button"
+                        class="secondary-button"
+                        id="emptyCreatePlaylistButton"
+                    >
+                        Create Playlist
+                    </button>
+
+                </div>
+
+            </section>
+
+
+            <!-- ================================
+                 FAVORITES SECTION
+            ================================= -->
+            <section
+                class="page-section"
+                id="favoritesSection"
+                data-section="favorites"
+                hidden
+            >
+
+                <div class="page-header">
+
+                    <div>
+                        <span class="section-kicker">YOUR PICKS</span>
+                        <h1>Favorites</h1>
+                        <p>Songs you never want to lose.</p>
+                    </div>
+
+                    <div class="page-header-icon">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path
+                                d="M20.8 8.8c0 5.1-8.8 10.2-8.8 10.2S3.2 13.9 3.2 8.8A4.8 4.8 0 0 1 12 6.1a4.8 4.8 0 0 1 8.8 2.7Z"
+                                stroke="currentColor"
+                                stroke-width="1.7"
+                                stroke-linejoin="round"
+                            />
+                        </svg>
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="song-list"
+                    id="favoriteSongsList"
+                    aria-live="polite"
+                ></div>
+
+
+                <div
+                    class="empty-state glass-card"
+                    id="favoriteEmptyState"
+                    hidden
+                >
+
+                    <div class="empty-icon">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path
+                                d="M20.8 8.8c0 5.1-8.8 10.2-8.8 10.2S3.2 13.9 3.2 8.8A4.8 4.8 0 0 1 12 6.1a4.8 4.8 0 0 1 8.8 2.7Z"
+                                stroke="currentColor"
+                                stroke-width="1.7"
+                                stroke-linejoin="round"
+                            />
+                        </svg>
+                    </div>
+
+                    <h3>No favorites yet</h3>
+
+                    <p>
+                        Favorite songs will appear here for quick access.
+                    </p>
+
+                    <button
+                        type="button"
+                        class="secondary-button"
+                        id="browseMusicButton"
+                    >
+                        Browse Music
+                    </button>
+
+                </div>
+
+            </section>
+
+
+            <!-- ================================
+                 SETTINGS SECTION
+            ================================= -->
+            <section
+                class="page-section"
+                id="settingsSection"
+                data-section="settings"
+                hidden
+            >
+
+                <div class="page-header">
+
+                    <div>
+                        <span class="section-kicker">PREFERENCES</span>
+                        <h1>Settings</h1>
+                        <p>Customize your Zuvo experience.</p>
+                    </div>
+
+                </div>
+
+
+              <div class="settings-list">
+
+    <!-- Playback -->
+    <div class="settings-group glass-card">
+
+        <div class="settings-group-title">
+
+            <div class="settings-group-icon">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path
+                        d="M8 5v14l11-7L8 5Z"
+                        stroke="currentColor"
+                        stroke-width="1.7"
+                        stroke-linejoin="round"
+                    />
+                </svg>
+            </div>
+
+            <div>
+                <h3>Playback</h3>
+                <p>Control how Zuvo plays your music.</p>
+            </div>
+
+        </div>
+
+        <label class="setting-row">
+
+            <span>
+                <strong>Autoplay</strong>
+                <small>
+                    Continue playing the next song automatically.
+                </small>
+            </span>
+
+            <input
+                type="checkbox"
+                id="autoplaySetting"
+                class="toggle-input"
+            >
+
+            <span class="toggle-control"></span>
+
+        </label>
+
+        <label class="setting-row">
+
+            <span>
+                <strong>Remember playback position</strong>
+                <small>
+                    Restore the last playback position when possible.
+                                <h3>Storage</h3>
+                <p>Your music stays on this device.</p>
+            </div>
+
+        </div>
+
+
+        <div class="storage-info">
+
+            <div class="storage-bar">
+                <span
+                    id="storageBarFill"
+                    class="storage-bar-fill"
+                ></span>
+            </div>
+
+            <div class="storage-details">
+                <span id="storageUsed">0 MB used</span>
+                <span id="storageSongCount">0 songs</span>
+            </div>
+
+        </div>
+
+
+        <button
+            type="button"
+            class="danger-button"
+            id="clearLibraryButton"
+        >
+            <svg viewBox="0 0 24 24" fill="none">
+                <path
+                    d="M4 7h16
+                       M10 11v6
+                       M14 11v6
+                       M6 7l1 13h10l1-13
+                       M9 7V4h6v3"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                />
+            </svg>
+
+            <span>Clear Music Library</span>
+        </button>
+
     </div>
-    <button class="icon-btn" id="lock-again-btn" title="Lock">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.6"/>
-        <path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.6"/>
-      </svg>
+
+
+    <!-- About -->
+    <div class="settings-group glass-card">
+
+        <div class="settings-group-title">
+
+            <div class="settings-group-icon">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <circle
+                        cx="12"
+                        cy="12"
+                        r="9"
+                        stroke="currentColor"
+                        stroke-width="1.7"
+                    />
+
+                    <path
+                        d="M12 10v6"
+                        stroke="currentColor"
+                        stroke-width="1.7"
+                        stroke-linecap="round"
+                    />
+
+                    <circle
+                        cx="12"
+                        cy="7"
+                        r="1"
+                        fill="currentColor"
+                    />
+                </svg>
+            </div>
+
+            <div>
+                <h3>About Zuvo</h3>
+                <p>Private. Local. Yours.</p>
+            </div>
+
+        </div>
+
+
+        <div class="about-row">
+            <span>Version</span>
+            <strong id="appVersion">1.0.0</strong>
+        </div>
+
+        <div class="about-row">
+            <span>Storage</span>
+            <strong>IndexedDB</strong>
+        </div>
+
+        <div class="about-row">
+            <span>Playback</span>
+            <strong>Local Audio</strong>
+        </div>
+
+    </div>
+
+              </div>
+              </section>
+
+
+<!-- =========================================================
+     BOTTOM NAVIGATION
+========================================================= -->
+
+<nav class="bottom-navigation" id="bottomNavigation">
+
+    <button
+        type="button"
+        class="nav-item active"
+        data-nav="home"
+        aria-label="Home"
+    >
+        <svg viewBox="0 0 24 24" fill="none">
+            <path
+                d="M3 10.5 12 3l9 7.5"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            />
+
+            <path
+                d="M5.5 9.5V21h13V9.5"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linejoin="round"
+            />
+
+            <path
+                d="M9.5 21v-6h5v6"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linejoin="round"
+            />
+        </svg>
+
+        <span>Home</span>
     </button>
-  </div>
 
-  <input type="file" id="upload-input" accept="image/*" multiple>
-  <label for="upload-input" class="dropzone">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M12 16V4M12 4l-4 4M12 4l4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-    </svg>
-    Add photos
-  </label>
 
-  <div class="gallery" id="gallery"></div>
-  <div class="empty-state" id="empty-state">Nothing here yet. Add your first photo above.</div>
-  <div class="status-line" id="status-line"></div>
+    <button
+        type="button"
+        class="nav-item"
+        data-nav="playlists"
+        aria-label="Playlists"
+    >
+        <svg viewBox="0 0 24 24" fill="none">
+            <path
+                d="M4 5h16M4 10h16M4 15h10"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+            />
+
+            <path
+                d="M17 14v6m-3-3h6"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+            />
+        </svg>
+
+        <span>Playlists</span>
+    </button>
+
+
+    <button
+        type="button"
+        class="nav-item"
+        data-nav="favorites"
+        aria-label="Favorites"
+    >
+        <svg viewBox="0 0 24 24" fill="none">
+            <path
+                d="M20.8 8.7c0 5.4-8.8 10.3-8.8 10.3S3.2 14.1 3.2 8.7A4.7 4.7 0 0 1 12 6.2a4.7 4.7 0 0 1 8.8 2.5Z"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linejoin="round"
+            />
+        </svg>
+
+        <span>Favorites</span>
+    </button>
+
+
+    <button
+        type="button"
+        class="nav-item"
+        data-nav="settings"
+        aria-label="Settings"
+    >
+        <svg viewBox="0 0 24 24" fill="none">
+            <path
+                d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"
+                stroke="currentColor"
+                stroke-width="1.7"
+            />
+
+            <path
+                d="m19.4 15 .1.1a1.8 1.8 0 0 1-2.5 2.5l-.1-.1
+                   a1.8 1.8 0 0 0-3 .9v.2a1.8 1.8 0 0 1-3.6 0v-.2
+                   a1.8 1.8 0 0 0-3-.9l-.1.1a1.8 1.8 0 1 1-2.5-2.5l.1-.1
+                   a1.8 1.8 0 0 0-.9-3h-.2a1.8 1.8 0 0 1 0-3.6h.2
+                   a1.8 1.8 0 0 0 .9-3l-.1-.1a1.8 1.8 0 1 1 2.5-2.5l.1.1
+                   a1.8 1.8 0 0 0 3-.9v-.2a1.8 1.8 0 0 1 3.6 0v.2
+                   a1.8 1.8 0 0 0 3 .9l.1-.1a1.8 1.8 0 1 1 2.5 2.5l-.1.1
+                   a1.8 1.8 0 0 0 .9 3h.2a1.8 1.8 0 0 1 0 3.6h-.2
+                   a1.8 1.8 0 0 0-.9 3Z"
+                stroke="currentColor"
+                stroke-width="1.4"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            />
+        </svg>
+
+        <span>Settings</span>
+    </button>
+
+</nav>
 </div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-  import {
-    getDatabase, ref, push, remove, onValue
-  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
 
-  // ---- Vault password ----
-  // Change this value directly to set/change the vault password.
-  const VAULT_PASSWORD = "changeme123";
 
-  // ---- Firebase setup ----
-  // Using Realtime Database only, so no need to enable Firestore or Storage.
-  const firebaseConfig = {
-    apiKey: "AIzaSyAB0MjSvpUVQlQy9PGW-P_G5orE3fjBZP0",
-    authDomain: "prank-75eb8.firebaseapp.com",
-    databaseURL: "https://prank-75eb8-default-rtdb.firebaseio.com",
-    projectId: "prank-75eb8",
-    storageBucket: "prank-75eb8.firebasestorage.app",
-    messagingSenderId: "300577190027",
-    appId: "1:300577190027:web:93feb272937c8a6284648e"
-  };
+<!-- =========================================================
+     FULL SCREEN PLAYER
+========================================================= -->
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-  const vaultRef = ref(db, 'vault_photos');
+<div
+    class="full-player"
+    id="fullPlayer"
+    aria-hidden="true"
+>
 
-  // ---- Elements ----
-  const lockScreen = document.getElementById('lock-screen');
-  const vaultScreen = document.getElementById('vault-screen');
-  const passwordInput = document.getElementById('password-input');
-  const lockError = document.getElementById('lock-error');
-  const unlockBtn = document.getElementById('unlock-btn');
-  const uploadInput = document.getElementById('upload-input');
-  const gallery = document.getElementById('gallery');
-  const emptyState = document.getElementById('empty-state');
-  const countNote = document.getElementById('count-note');
-  const statusLine = document.getElementById('status-line');
-  const lockAgainBtn = document.getElementById('lock-again-btn');
+    <div class="full-player-backdrop"></div>
 
-  let stopListening = null;
 
-  function tryUnlock() {
-    const val = passwordInput.value;
-    if (!val) {
-      lockError.textContent = 'Enter a password first';
-      return;
-    }
-    if (val === VAULT_PASSWORD) {
-      lockError.textContent = '';
-      passwordInput.value = '';
-      lockScreen.style.display = 'none';
-      vaultScreen.style.display = 'block';
-      startListening();
-    } else {
-      lockError.textContent = 'Wrong password. Try again.';
-      passwordInput.value = '';
-    }
-  }
+    <div class="full-player-content">
 
-  function lockVault() {
-    if (stopListening) { stopListening(); stopListening = null; }
-    vaultScreen.style.display = 'none';
-    lockScreen.style.display = 'block';
-    passwordInput.focus();
-  }
+        <header class="player-header">
 
-  function startListening() {
-    stopListening = onValue(vaultRef, (snapshot) => {
-      const photos = [];
-      snapshot.forEach((childSnap) => {
-        photos.push({ id: childSnap.key, ...childSnap.val() });
-      });
-      photos.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-      renderGallery(photos);
-    }, (err) => {
-      statusLine.textContent = 'Could not load photos: ' + err.message;
-    });
-  }
+            <button
+                type="button"
+                class="icon-button"
+                id="closeFullPlayerButton"
+                aria-label="Close player"
+            >
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path
+                        d="m6 9 6 6 6-6"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    />
+                </svg>
+            </button>
 
-  function renderGallery(photos) {
-    gallery.innerHTML = '';
-    emptyState.style.display = photos.length === 0 ? 'block' : 'none';
-    countNote.textContent = photos.length === 0
-      ? 'No photos yet'
-      : photos.length + (photos.length === 1 ? ' photo' : ' photos');
 
-    photos.forEach((photo) => {
-      const item = document.createElement('div');
-      item.className = 'photo-item';
+            <div class="player-header-title">
+                <span>NOW PLAYING</span>
+            </div>
 
-      const img = document.createElement('img');
-      img.src = photo.data;
-      img.loading = 'lazy';
-      item.appendChild(img);
 
-      const actions = document.createElement('div');
-      actions.className = 'photo-actions';
+            <button
+                type="button"
+                class="icon-button"
+                id="playerMoreButton"
+                aria-label="More options"
+            >
+                <svg viewBox="0 0 24 24" fill="none">
+                    <circle
+                        cx="5"
+                        cy="12"
+                        r="1.3"
+                        fill="currentColor"
+                    />
+                    <circle
+                        cx="12"
+                        cy="12"
+                        r="1.3"
+                        fill="currentColor"
+                    />
+                    <circle
+                        cx="19"
+                        cy="12"
+                        r="1.3"
+                        fill="currentColor"
+                    />
+                </svg>
+            </button>
 
-      const downloadBtn = document.createElement('button');
-      downloadBtn.className = 'mini-btn';
-      downloadBtn.title = 'Download';
-      downloadBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 4v11M12 15l-4-4M12 15l4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 19h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
-      downloadBtn.onclick = () => downloadPhoto(photo);
+        </header>
 
-      const deleteBtn = document.createElement('button');
-      deleteBtn.className = 'mini-btn danger';
-      deleteBtn.title = 'Delete';
-      deleteBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 7h14M10 7V5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2m-7 0 1 12a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l1-12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-      deleteBtn.onclick = () => deletePhoto(photo);
 
-      actions.appendChild(downloadBtn);
-      actions.appendChild(deleteBtn);
-      item.appendChild(actions);
+        <main class="player-main">
 
-      gallery.appendChild(item);
-    });
-  }
+            <div class="player-artwork-wrap">
 
-  function downloadPhoto(photo) {
-    const a = document.createElement('a');
-    a.href = photo.data;
-    a.download = photo.name || 'photo.jpg';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  }
+<div
+                    class="player-artwork-glow"
+                    id="playerArtworkGlow"
+                ></div>
 
-  async function deletePhoto(photo) {
-    try {
-      await remove(ref(db, 'vault_photos/' + photo.id));
-    } catch (err) {
-      statusLine.textContent = 'Delete failed: ' + err.message;
-    }
-  }
+                <img
+                    id="playerArtwork"
+                    class="player-artwork"
+                    src=""
+                    alt="Album artwork"
+                >
 
-  uploadInput.addEventListener('change', (e) => {
-    const files = Array.from(e.target.files);
-    if (files.length === 0) return;
+            </div>
 
-    statusLine.textContent = 'Uploading ' + files.length + (files.length === 1 ? ' photo…' : ' photos…');
-    let remaining = files.length;
 
-    files.forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = async (ev) => {
-        try {
-          await push(vaultRef, {
-            data: ev.target.result,
-            name: file.name,
-            createdAt: Date.now()
-          });
-        } catch (err) {
-          statusLine.textContent = 'Upload failed: ' + err.message;
-        }
-        remaining--;
-        if (remaining === 0) statusLine.textContent = '';
-      };
-      reader.onerror = () => {
-        statusLine.textContent = 'Could not read one of the files';
-        remaining--;
-      };
-      reader.readAsDataURL(file);
-    });
+            <div class="player-song-details">
 
-    uploadInput.value = '';
-  });
+                <div class="player-title-row">
 
-  unlockBtn.addEventListener('click', tryUnlock);
-  passwordInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') tryUnlock();
-  });
-  lockAgainBtn.addEventListener('click', lockVault);
-</script>
+                    <div>
+
+                        <h2 id="playerSongTitle">
+                            No song playing
+                        </h2>
+
+                        <p id="playerSongArtist">
+                            Your local music
+                        </p>
+
+                    </div>
+
+
+                    <button
+                        type="button"
+                        class="icon-button player-favorite-button"
+                        id="playerFavoriteButton"
+                        aria-label="Favorite song"
+                    >
+
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                        >
+                            <path
+                                d="M20.8 8.7c0 5.4-8.8 10.3-8.8 10.3S3.2 14.1 3.2 8.7A4.7 4.7 0 0 1 12 6.2a4.7 4.7 0 0 1 8.8 2.5Z"
+                                stroke="currentColor"
+                                stroke-width="1.7"
+                                stroke-linejoin="round"
+                            />
+                        </svg>
+
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- Seek -->
+
+            <div class="player-progress">
+
+                <input
+                    type="range"
+                    id="seekBar"
+                    class="range-input seek-bar"
+                    min="0"
+                    max="100"
+                    value="0"
+                    step="0.1"
+                    aria-label="Seek"
+                >
+
+                <div class="time-row">
+
+                    <span id="currentTime">0:00</span>
+
+                    <span id="duration">0:00</span>
+
+</div>
+
+            </div>
+
+
+            <!-- Main Controls -->
+
+            <div class="player-controls">
+
+                <button
+                    type="button"
+                    class="player-control secondary"
+                    id="shuffleButton"
+                    aria-label="Shuffle"
+                    aria-pressed="false"
+                >
+
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path
+                            d="M16 3h5v5
+                               M21 3l-7 7
+                               M4 7h3c2 0 3 1 4.5 3
+                               L13 13
+                               c1.5 2 2.5 3 5 3h3
+                               M16 16h5v5
+                               M21 21l-7-7
+                               M4 17h3c1.5 0 2.5-.7 3.5-2"
+                            stroke="currentColor"
+                            stroke-width="1.6"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        />
+                    </svg>
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="player-control"
+                    id="previousButton"
+                    aria-label="Previous song"
+                >
+
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path
+                            d="M6 5v14"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                        />
+
+                        <path
+                            d="m18 6-8 6 8 6V6Z"
+                            fill="currentColor"
+                        />
+                    </svg>
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="main-play-button"
+                    id="mainPlayButton"
+                    aria-label="Play"
+                >
+
+                    <svg
+                        class="icon-play"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                    >
+                        <path
+                            d="M8 5v14l11-7L8 5Z"
+                            fill="currentColor"
+                        />
+                    </svg>
+
+
+                    <svg
+                        class="icon-pause"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                    >
+                        <path
+                            d="M8 5v14M16 5v14"
+                            stroke="currentColor"
+                            stroke-width="2.2"
+                            stroke-linecap="round"
+                        />
+                    </svg>
+
+                </button>
+
+
+                <button
+    </div>
+
+</div>
+
+
+</main>
+
+
+<!-- =========================================================
+     AUDIO PLAYER
+========================================================= -->
+
+<audio
+    id="audioPlayer"
+    preload="metadata"
+    playsinline
+></audio>
+
+
+<!-- =========================================================
+     AUDIO FILE INPUT
+========================================================= -->
+
+<input
+    type="file"
+    id="audioFileInput"
+    accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.opus,.flac"
+    multiple
+    hidden
+>
+
+
+<!-- =========================================================
+     SCRIPT
+========================================================= -->
+
+<script src="script.js" defer></script>
 
 </body>
 </html>
+  
