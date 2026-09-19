@@ -2,259 +2,659 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Zuvo — Your Music Library</title>
-<link rel="stylesheet" href="style.css">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05060a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Zuvo — Glass Music</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+:root{
+ --bg:#05060a;--bg2:#0b0e15;--glass:rgba(255,255,255,.075);--glass2:rgba(255,255,255,.11);
+ --line:rgba(255,255,255,.105);--text:#f7f8fb;--muted:#9da4b4;
+ --blue:#69a2ff;--blue2:#8bb8ff;--purple:#a88bff;--pink:#ff76b8;
+ --green:#45e39a;--red:#ff5f72;--shadow:0 25px 80px rgba(0,0,0,.45);
+ --radius:24px
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+ margin:0;color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;
+ background:
+ radial-gradient(circle at 12% 5%,rgba(83,137,255,.22),transparent 28%),
+ radial-gradient(circle at 88% 12%,rgba(171,89,255,.16),transparent 25%),
+ radial-gradient(circle at 50% 100%,rgba(255,72,155,.09),transparent 30%),var(--bg);
+ min-height:100vh;overflow-x:hidden
+}
+body:before{
+ content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;
+ background:linear-gradient(120deg,rgba(255,255,255,.025),transparent 35%,rgba(255,255,255,.018));
+}
+button,input{font:inherit}
+button{color:inherit}
+button:active{transform:scale(.97)}
+.hidden{display:none!important}
+.app{min-height:100vh;padding-bottom:110px}
+.glass{
+ background:linear-gradient(135deg,rgba(255,255,255,.105),rgba(255,255,255,.035));
+ border:1px solid var(--line);
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.08),var(--shadow);
+ backdrop-filter:blur(28px) saturate(150%);-webkit-backdrop-filter:blur(28px) saturate(150%)
+}
+.topbar{
+ position:sticky;top:0;z-index:50;padding-top:env(safe-area-inset-top);
+ background:rgba(5,6,10,.58);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px)
+}
+.head{height:70px;max-width:1150px;margin:auto;padding:0 18px;display:flex;align-items:center;gap:10px}
+.logo{font-size:27px;font-weight:900;letter-spacing:-1.8px;margin-right:auto}
+.logo span{color:var(--blue)}
+.circle{
+ width:43px;height:43px;border-radius:50%;border:1px solid var(--line);
+ background:var(--glass);display:grid;place-items:center;cursor:pointer;
+ backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)
+}
+.circle:hover{background:var(--glass2)}
+main{max-width:1150px;margin:auto;padding:20px 18px}
+.page{display:none}.page.active{display:block;animation:pageIn .3s ease}
+@keyframes pageIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.hero{
+ min-height:420px;display:flex;flex-direction:column;justify-content:flex-end;
+ padding:38px 28px;margin:12px 0 30px;border-radius:34px;position:relative;overflow:hidden;
+ background:
+ radial-gradient(circle at 75% 20%,rgba(105,162,255,.42),transparent 30%),
+ radial-gradient(circle at 15% 100%,rgba(168,139,255,.22),transparent 35%),
+ linear-gradient(145deg,rgba(255,255,255,.12),rgba(255,255,255,.025));
+ border:1px solid var(--line);box-shadow:var(--shadow);backdrop-filter:blur(30px)
+}
+.hero:before{
+ content:"";position:absolute;width:280px;height:280px;border-radius:50%;right:-80px;top:-100px;
+ background:linear-gradient(135deg,#6ba5ff,#9b70ff);filter:blur(1px);opacity:.25
+}
+.hero:after{
+ content:"♫";position:absolute;right:8%;top:17%;font-size:170px;font-weight:900;opacity:.055;transform:rotate(12deg)
+}
+.eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:2px;color:var(--blue2);font-weight:800;position:relative}
+.hero h1{font-size:clamp(42px,8vw,76px);line-height:.93;letter-spacing:-4px;margin:12px 0;max-width:700px;position:relative}
+.hero p{color:#b7bfce;max-width:620px;line-height:1.6;position:relative}
+.actions{display:flex;gap:10px;flex-wrap:wrap;position:relative}
+.btn{
+ border:1px solid rgba(255,255,255,.13);border-radius:15px;padding:12px 18px;
+ background:linear-gradient(135deg,#78adff,#4f82e8);font-weight:800;cursor:pointer;
+ box-shadow:0 10px 30px rgba(76,130,232,.22)
+}
+.btn.secondary{background:var(--glass);box-shadow:none}
+.btn.danger{background:rgba(255,95,114,.12);color:#ff8d9b}
+.sectionHead{display:flex;align-items:center;gap:12px;margin:30px 0 14px}
+.sectionHead h2{margin:0;font-size:21px;letter-spacing:-.5px}.sectionHead button{margin-left:auto}
+.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:13px}
+.quickCard{
+ min-height:150px;border:1px solid var(--line);border-radius:22px;padding:15px;text-align:left;
+ background:linear-gradient(145deg,rgba(255,255,255,.09),rgba(255,255,255,.035));cursor:pointer;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.06)
+}
+.quickCard:hover{background:rgba(255,255,255,.12);transform:translateY(-2px)}
+.quickIcon{
+ width:52px;height:52px;border-radius:16px;display:grid;place-items:center;font-size:23px;
+ background:linear-gradient(145deg,rgba(105,162,255,.35),rgba(168,139,255,.13));margin-bottom:20px
+}
+.quickTitle{font-weight:800}.quickSub{font-size:12px;color:var(--muted);margin-top:4px}
+.searchBox{
+ height:57px;border-radius:19px;display:flex;align-items:center;gap:11px;padding:0 17px;
+ background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(25px)
+}
+.searchBox span{font-size:22px;color:var(--muted)}.searchBox input{flex:1;background:none;border:0;outline:0;color:var(--text);font-size:16px}.searchBox input::placeholder{color:#777f90}
+.chips{display:flex;gap:8px;overflow:auto;padding:14px 0}.chip{white-space:nowrap;border:1px solid var(--line);background:var(--glass);padding:9px 15px;border-radius:99px;cursor:pointer;color:#b8c0cf}.chip.on{background:rgba(105,162,255,.2);border-color:rgba(105,162,255,.55);color:#dce9ff}
+.list{display:flex;flex-direction:column;gap:3px}
+.row{
+ display:flex;align-items:center;gap:13px;padding:9px;border-radius:18px;transition:.18s;
+ border:1px solid transparent
+}
+.row:hover{background:rgba(255,255,255,.055);border-color:rgba(255,255,255,.05)}
+.thumb{width:57px;height:57px;flex:none}.thumb .art{width:57px;height:57px}
+.art{
+ width:100%;height:100%;border-radius:17px;display:grid;place-items:center;overflow:hidden;
+ background:linear-gradient(135deg,#263f71,#111522);position:relative
+}
+.art:after{content:"";position:absolute;inset:0;background:linear-gradient(145deg,rgba(255,255,255,.13),transparent 50%)}
+.art span{font-size:29px;font-weight:900;opacity:.9}.art img{width:100%;height:100%;object-fit:cover;position:relative;z-index:2}
+.info{min-width:0;flex:1;cursor:pointer}.title{font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.artist{color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px}
+.more{width:40px;height:40px;border:0;border-radius:50%;background:transparent;color:#aeb6c6;font-size:21px;cursor:pointer}.more:hover{background:var(--glass)}
+.empty{padding:60px 20px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:22px;background:rgba(255,255,255,.02)}
+.playlistGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px}
+.playlistCard{padding:12px;text-align:left;border:1px solid var(--line);border-radius:22px;background:var(--glass);cursor:pointer}
+.playlistCard .art{aspect-ratio:1;margin-bottom:11px}
+.sortBtn{border:1px solid var(--line);background:var(--glass);border-radius:12px;padding:9px 12px;cursor:pointer}
+.mini{
+ position:fixed;z-index:70;left:10px;right:10px;bottom:82px;max-width:1130px;margin:auto;
+ min-height:72px;border-radius:20px;padding:9px 10px;display:none;align-items:center;gap:11px;
+ background:rgba(17,23,35,.84);border:1px solid rgba(255,255,255,.13);
+ box-shadow:0 20px 70px #0009;backdrop-filter:blur(30px) saturate(170%);-webkit-backdrop-filter:blur(30px) saturate(170%)
+}
+.mini.show{display:flex}.miniThumb{width:52px;height:52px;flex:none}.miniInfo{flex:1;min-width:0}.miniBtns{display:flex;align-items:center}.miniBtns button{width:38px;height:38px;border:0;background:transparent;border-radius:50%;cursor:pointer;font-size:19px}.miniBtns button:hover{background:rgba(255,255,255,.08)}
+.miniPlay{background:#f7f8fb!important;color:#080b12;width:43px!important;height:43px!important}
+.miniLine{position:absolute;left:10px;right:10px;bottom:1px;height:3px;background:#30394b;border-radius:99px;overflow:hidden}.miniLine i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--purple))}
+.nav{
+ position:fixed;z-index:80;bottom:10px;left:50%;transform:translateX(-50%);width:min(700px,calc(100% - 20px));
+ height:70px;padding:5px;border-radius:23px;background:rgba(17,22,32,.78);
+ border:1px solid rgba(255,255,255,.12);box-shadow:0 18px 70px #0009;
+ backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%)
+}
+.navIn{height:100%;display:grid;grid-template-columns:repeat(5,1fr)}.nav button{border:0;background:none;color:#747d90;border-radius:18px;cursor:pointer;font-size:10px}.nav button span{display:block;font-size:21px;margin-bottom:2px}.nav button.on{background:rgba(255,255,255,.07);color:#f5f7fb}.nav button.on span{color:var(--blue)}
+.full{
+ position:fixed;z-index:110;inset:0;display:none;overflow:auto;
+ background:
+ radial-gradient(circle at 50% -10%,rgba(91,145,255,.42),transparent 34%),
+ radial-gradient(circle at 90% 55%,rgba(177,91,255,.18),transparent 30%),#06080e;
+ padding:calc(18px + env(safe-area-inset-top)) 20px calc(25px + env(safe-area-inset-bottom));
+}
+.full.open{display:block;animation:pageIn .3s ease}.fullTop{display:flex;align-items:center;justify-content:space-between;max-width:700px;margin:auto}.fullTop b{font-size:11px;letter-spacing:2px;color:#aeb7c9}#42445A
+.fullMain{width:min(700px,100%);margin:auto}.fullArt{width:min(440px,82vw);aspect-ratio:1;margin:7vh auto 28px;border-radius:32px;overflow:hidden;box-shadow:0 35px 100px #0009}.fullArt .art{border-radius:32px}
+.fullTitle{font-size:28px;font-weight:850;letter-spacing:-1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fullArtist{color:var(--muted);margin-top:5px}
+.seek{height:5px;background:#30394a;border-radius:99px;margin-top:30px;cursor:pointer}.seek i{display:block;width:0;height:100%;border-radius:99px;background:#f4f6fb}.times{display:flex;justify-content:space-between;color:#81899a;font-size:11px;margin-top:8px}
+.controls{display:flex;align-items:center;justify-content:center;gap:14px;margin:25px 0}.controls button{border:0;background:transparent;width:48px;height:48px;border-radius:50%;cursor:pointer;font-size:20px}.controls button.active{color:var(--blue)}.controls .mainPlay{width:66px;height:66px;background:#f5f7fb;color:#070a10;font-size:26px;box-shadow:0 10px 35px #0006}
+.playerTools{display:flex;justify-content:center;gap:9px;flex-wrap:wrap}.tool{border:1px solid var(--line);background:var(--glass);padding:10px 14px;border-radius:14px;cursor:pointer}
+.modal{position:fixed;inset:0;z-index:150;background:rgba(0,0,0,.66);display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(7px)}
+.sheet{
+ width:min(650px,100%);max-height:88vh;overflow:auto;padding:19px;border-radius:28px 28px 0 0;
+ background:rgba(18,23,34,.92);border:1px solid var(--line);box-shadow:0 -20px 80px #0008;
+ backdrop-filter:blur(35px) saturate(160%);-webkit-backdrop-filter:blur(35px) saturate(160%)
+}
+.sheetHead{display:flex;align-items:center;gap:12px;margin-bottom:12px}.sheetHead h3{margin:0;flex:1;font-size:20px}
+.listBtn{width:100%;padding:15px 9px;text-align:left;border:0;border-bottom:1px solid rgba(255,255,255,.06);background:transparent;cursor:pointer}.listBtn:hover{background:rgba(255,255,255,.05)}
+.formInput{width:100%;height:52px;background:rgba(0,0,0,.18);border:1px solid var(--line);border-radius:15px;padding:0 14px;color:var(--text);outline:0}
+.formInput:focus{border-color:rgba(105,162,255,.65)}
+.toast{
+ position:fixed;z-index:300;left:50%;bottom:100px;transform:translate(-50%,15px);
+ padding:12px 17px;border-radius:15px;background:rgba(245,247,251,.94);color:#070a10;font-weight:750;
+ box-shadow:0 15px 50px #0008;opacity:0;pointer-events:none;transition:.22s
+}.toast.show{opacity:1;transform:translate(-50%,0)}
+
+ .plSectionTitle{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:850;letter-spacing:1.2px;text-transform:uppercase;color:#aeb9cc;margin:21px 4px 9px}
+ .plSectionTitle:before{content:"";width:4px;height:15px;border-radius:99px;background:linear-gradient(180deg,var(--blue),var(--purple));box-shadow:0 0 12px rgba(105,162,255,.35)}
+ .plAvailable{margin-top:3px;padding:5px;border-radius:23px;background:linear-gradient(145deg,rgba(255,255,255,.065),rgba(255,255,255,.018));border:1px solid rgba(255,255,255,.075);box-shadow:inset 0 1px 0 rgba(255,255,255,.055),0 15px 45px rgba(0,0,0,.16)}
+ .plAddRow{position:relative;display:flex;align-items:center;gap:12px;padding:9px;border-radius:18px;border:1px solid transparent;transition:.22s cubic-bezier(.2,.8,.2,1)}
+ .plAddRow + .plAddRow{border-top:1px solid rgba(255,255,255,.045);border-top-left-radius:0;border-top-right-radius:0}
+ .plAddRow:hover{background:linear-gradient(90deg,rgba(105,162,255,.08),rgba(168,139,255,.035));border-color:rgba(255,255,255,.065);transform:translateX(2px)}
+ .plAddRow:after{content:"";position:absolute;inset:0;border-radius:18px;pointer-events:none;background:linear-gradient(120deg,rgba(255,255,255,.055),transparent 35%);opacity:.55}
+ .plAddRow .thumb{width:52px;height:52px}.plAddRow .thumb .art{width:52px;height:52px;border-radius:15px;box-shadow:0 7px 22px rgba(0,0,0,.25)}
+ .plAddRow .info{padding-right:3px}
+ .plAddBtn{position:relative;z-index:2;width:40px;height:40px;flex:none;border:1px solid rgba(255,255,255,.16);border-radius:14px;background:linear-gradient(145deg,rgba(255,255,255,.13),rgba(255,255,255,.045));color:#e8efff;font-size:21px;line-height:1;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.11),0 7px 20px rgba(0,0,0,.18);transition:.2s}
+ .plAddBtn:hover{background:linear-gradient(145deg,rgba(105,162,255,.34),rgba(168,139,255,.20));border-color:rgba(133,173,255,.55);box-shadow:0 0 22px rgba(105,162,255,.22),inset 0 1px 0 rgba(255,255,255,.16);transform:translateY(-1px) scale(1.04)}
+ .plAddBtn:active{transform:scale(.92)}
+ .plRemoveBtn{
+  position:relative;z-index:2;width:40px;height:40px;flex:none;
+  border:1px solid rgba(255,95,114,.18);border-radius:14px;
+  background:linear-gradient(145deg,rgba(255,95,114,.12),rgba(255,255,255,.035));
+  color:#ff9aa6;font-size:20px;line-height:1;cursor:pointer;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 7px 20px rgba(0,0,0,.16);
+  transition:.2s
+ }
+ .plRemoveBtn:hover{
+  background:linear-gradient(145deg,rgba(255,95,114,.28),rgba(255,95,114,.09));
+  border-color:rgba(255,120,135,.5);color:#fff;
+  box-shadow:0 0 20px rgba(255,95,114,.18),inset 0 1px 0 rgba(255,255,255,.12);
+  transform:translateY(-1px) scale(1.04)
+ }
+ .plRemoveBtn:active{transform:scale(.92)}
+ .plInRow{display:flex;align-items:center;gap:12px;padding:5px 9px 5px 5px;border-radius:18px;transition:.2s}
+ .plInRow:hover{background:rgba(255,255,255,.045)}
+ .plInRow .row{flex:1;padding:4px 0}
+
+ .plAvailable .empty{border:0;background:transparent;padding:35px 15px;color:#8f99ab}
+
+.settingsRange{width:100%;accent-color:var(--blue)}
+.dropZone{padding:28px;text-align:center;border:1px dashed rgba(120,166,255,.5);border-radius:20px;color:var(--muted);margin-top:14px;background:rgba(105,162,255,.045)}
+@media(max-width:650px){
+ .quick{grid-template-columns:repeat(2,1fr)}.quickCard{min-height:125px}.hero{min-height:440px;padding:25px 20px}.hero h1{letter-spacing:-2.5px}
+ .mini{bottom:86px}.nav{bottom:7px}.fullArt{margin-top:6vh}.row{padding:8px 5px}
+}
+@media(min-width:900px){.app{padding-bottom:30px}.nav{bottom:18px}.mini{bottom:100px}}
+</style>
 </head>
 <body>
 
-<!-- TOP BAR -->
+<div class="app">
 <header class="topbar">
-  <div class="brand">
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M9 18V5l12-2v13" stroke="url(#g1)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="18" r="3" stroke="url(#g1)" stroke-width="1.8"/><circle cx="18" cy="16" r="3" stroke="url(#g1)" stroke-width="1.8"/><defs><linearGradient id="g1" x1="0" y1="0" x2="24" y2="24"><stop stop-color="#5B8CFF"/><stop offset="1" stop-color="#8F6CFF"/></linearGradient></defs></svg>
-    <span>Zuvo</span>
-  </div>
-  <div class="topbar-actions">
-    <button class="icon-btn" id="searchBtn" aria-label="Search">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-    </button>
-    <button class="icon-btn" id="addMusicBtnTop" aria-label="Add Music">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-    </button>
-  </div>
+ <div class="head">
+  <div class="logo">zuvo<span>.</span></div>
+  <button class="circle" onclick="showPage('search');setTimeout(()=>searchInput.focus(),80)">⌕</button>
+  <button class="circle" onclick="openImport()">＋</button>
+  <button class="circle" onclick="openSettings()">⚙</button>
+ </div>
 </header>
 
-<!-- SEARCH BAR -->
-<div class="search-bar" id="searchBar">
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-  <input type="text" id="searchInput" placeholder="Search title, artist or album">
-  <button class="icon-btn small" id="clearSearchBtn" aria-label="Clear search">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-  </button>
-</div>
+<main>
+<section id="home" class="page active">
+ <div class="hero">
+  <div class="eyebrow">Your music • beautifully yours</div>
+  <h1>Music, but<br>make it Zuvo.</h1>
+  <p>A premium glass-style music experience for your own collection. Fast, private and beautifully simple.</p>
+  <div class="actions">
+   <button class="btn" onclick="openImport()">＋ Add Music</button>
+   <button class="btn secondary" onclick="playAll()">▶ Play All</button>
+   <button class="btn secondary" onclick="shuffleAll()">⤨ Shuffle</button>
+  </div>
+ </div>
 
-<input type="file" id="fileInput" accept="audio/*" multiple hidden>
+ <div class="sectionHead"><h2>Quick Access</h2></div>
+ <div class="quick" id="quick"></div>
 
-<main id="main">
+ <div class="sectionHead"><h2>Recently Played</h2><button class="sortBtn" onclick="showPage('recent')">See all</button></div>
+ <div id="homeRecent" class="list"></div>
+ <div id="homeEmpty" class="empty">Your Zuvo library is waiting.<br><br><button class="btn" onclick="openImport()">Add your first song</button></div>
+</section>
 
-  <!-- HOME -->
-  <section class="view active" id="view-home">
-    <div class="hero-card">
-      <p class="hero-text">Your music.<br>Your atmosphere.</p>
-    </div>
+<section id="search" class="page">
+ <div class="sectionHead"><h2>Search</h2></div>
+ <div class="searchBox"><span>⌕</span><input id="searchInput" placeholder="Search songs, artists or albums…" oninput="doSearch(this.value)"></div>
+ <div id="searchResults" class="list" style="margin-top:14px"></div>
+</section>
 
-    <div class="stats-row">
-      <div class="stat-card"><span class="stat-num" id="statSongs">0</span><span class="stat-label">Songs</span></div>
-      <div class="stat-card"><span class="stat-num" id="statFavorites">0</span><span class="stat-label">Favorites</span></div>
-      <div class="stat-card"><span class="stat-num" id="statPlaylists">0</span><span class="stat-label">Playlists</span></div>
-    </div>
+<section id="library" class="page">
+ <div class="sectionHead"><h2>Library</h2><button class="sortBtn" onclick="openSort()">☷ Sort</button></div>
+ <div class="chips">
+  <button class="chip on" onclick="setFilter('all',this)">All</button>
+  <button class="chip" onclick="setFilter('liked',this)">♥ Liked</button>
+  <button class="chip" onclick="setFilter('recent',this)">◷ Recent</button>
+ </div>
+ <div id="libraryList" class="list"></div>
+</section>
 
-    <div class="section-head">
-      <h2>Recently Added</h2>
-    </div>
-    <div class="song-list" id="recentList"></div>
+<section id="liked" class="page">
+ <div class="sectionHead"><h2>Liked Songs</h2></div>
+ <div id="likedList" class="list"></div>
+</section>
 
-    <div class="empty-state" id="homeEmpty" hidden>
-      <p>Your library is empty</p>
-      <span>Import songs from your device to get started</span>
-      <button class="primary-btn" id="addMusicBtnEmpty">Add Music</button>
-    </div>
-  </section>
+<section id="playlists" class="page">
+ <div class="sectionHead"><h2>Playlists</h2><button class="btn" onclick="newPlaylist()">＋ Create</button></div>
+ <div id="playlistGrid" class="playlistGrid"></div>
+</section>
 
-  <!-- PLAYLISTS -->
-  <section class="view" id="view-playlists">
-    <div class="section-head">
-      <h2>Playlists</h2>
-      <button class="icon-btn" id="createPlaylistBtn" aria-label="Create playlist">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-      </button>
-    </div>
-    <div class="playlist-grid" id="playlistGrid"></div>
-    <div class="empty-state" id="playlistsEmpty" hidden>
-      <p>No playlists yet</p>
-      <span>Group your favorite tracks together</span>
-      <button class="primary-btn" id="createPlaylistBtnEmpty">Create Playlist</button>
-    </div>
-  </section>
-
-  <!-- PLAYLIST DETAIL -->
-  <section class="view" id="view-playlist-detail">
-    <div class="section-head">
-      <button class="icon-btn" id="backFromPlaylist" aria-label="Back">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
-      <h2 id="playlistDetailName">Playlist</h2>
-      <button class="icon-btn" id="deletePlaylistBtn" aria-label="Delete playlist">
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m2 0v13a1 1 0 01-1 1H8a1 1 0 01-1-1V7h10z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
-    </div>
-    <div class="song-list" id="playlistDetailList"></div>
-    <div class="empty-state" id="playlistDetailEmpty" hidden>
-      <p>No songs in this playlist</p>
-      <span>Add songs from your library</span>
-    </div>
-  </section>
-
-  <!-- FAVORITES -->
-  <section class="view" id="view-favorites">
-    <div class="section-head"><h2>Favorites</h2></div>
-    <div class="song-list" id="favoritesList"></div>
-    <div class="empty-state" id="favoritesEmpty" hidden>
-      <p>No favorites yet</p>
-      <span>Tap the heart on any song to save it here</span>
-    </div>
-  </section>
-
-  <!-- SETTINGS -->
-  <section class="view" id="view-settings">
-    <div class="section-head"><h2>Settings</h2></div>
-
-    <div class="settings-group">
-      <div class="settings-row">
-        <div class="settings-row-text"><span>Autoplay</span><small>Automatically play the next track</small></div>
-        <label class="switch"><input type="checkbox" id="autoplayToggle"><span class="slider"></span></label>
-      </div>
-      <div class="settings-row">
-        <div class="settings-row-text"><span>Remember Position</span><small>Resume songs where you left off</small></div>
-        <label class="switch"><input type="checkbox" id="rememberPosToggle"><span class="slider"></span></label>
-      </div>
-    </div>
-
-    <div class="settings-group">
-      <div class="settings-row">
-        <div class="settings-row-text"><span>Storage Used</span><small id="storageInfo">Calculating...</small></div>
-      </div>
-      <div class="settings-row">
-        <div class="settings-row-text"><span>Clear Library</span><small>Remove all songs, playlists and favorites</small></div>
-        <button class="danger-btn" id="clearLibraryBtn">Clear</button>
-      </div>
-    </div>
-
-    <div class="settings-group">
-      <div class="settings-row">
-        <div class="settings-row-text"><span>About Zuvo</span><small>Version 1.0.0 — a private, offline music library</small></div>
-      </div>
-    </div>
-  </section>
-
+<section id="recent" class="page">
+ <div class="sectionHead"><h2>Recently Played</h2><button class="sortBtn" onclick="clearRecent()">Clear</button></div>
+ <div id="recentList" class="list"></div>
+</section>
 </main>
-
-<!-- MINI PLAYER -->
-<div class="mini-player" id="miniPlayer" hidden>
-  <div class="mini-progress"><div class="mini-progress-fill" id="miniProgressFill"></div></div>
-  <div class="mini-player-inner">
-    <img class="mini-cover" id="miniCover" alt="">
-    <div class="mini-info" id="miniInfo">
-      <span class="mini-title" id="miniTitle">—</span>
-      <span class="mini-artist" id="miniArtist">—</span>
-    </div>
-    <button class="icon-btn" id="miniPlayBtn" aria-label="Play/Pause"></button>
-    <button class="icon-btn" id="miniNextBtn" aria-label="Next">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 5v14l10-7L6 5z" fill="currentColor"/><path d="M18 5v14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-    </button>
-  </div>
 </div>
 
-<!-- FULLSCREEN PLAYER -->
-<div class="full-player" id="fullPlayer" hidden>
-  <div class="full-player-top">
-    <button class="icon-btn" id="collapsePlayerBtn" aria-label="Collapse">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
-    <span>Now Playing</span>
-    <button class="icon-btn" id="fullFavoriteBtn" aria-label="Favorite"></button>
-  </div>
-
-  <div class="full-cover-wrap"><img class="full-cover" id="fullCover" alt=""></div>
-
-  <div class="full-info">
-    <h3 id="fullTitle">—</h3>
-    <p id="fullArtist">—</p>
-  </div>
-
-  <div class="full-progress-wrap">
-    <input type="range" id="seekBar" min="0" max="100" value="0" step="0.1">
-    <div class="time-row"><span id="currentTime">0:00</span><span id="duration">0:00</span></div>
-  </div>
-
-  <div class="full-controls">
-    <button class="icon-btn" id="shuffleBtn" aria-label="Shuffle">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 6h3.5l9 13H20M4 18h3.5l3-4.3M15.5 6H20M17.5 3.5L20 6l-2.5 2.5M17.5 20.5L20 18l-2.5-2.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
-    <button class="icon-btn" id="prevBtn" aria-label="Previous">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M18 5v14L8 12l10-7z" fill="currentColor"/><path d="M6 5v14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-    </button>
-    <button class="play-btn-lg" id="playBtn" aria-label="Play/Pause"></button>
-    <button class="icon-btn" id="nextBtn" aria-label="Next">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M6 5v14l10-7L6 5z" fill="currentColor"/><path d="M18 5v14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-    </button>
-    <button class="icon-btn" id="repeatBtn" aria-label="Repeat">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M17 2l4 4-4 4M3 11V9a4 4 0 014-4h14M7 22l-4-4 4-4M21 13v2a4 4 0 01-4 4H3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
-  </div>
-
-  <div class="full-volume">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 9v6h4l5 5V4L8 9H4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
-    <input type="range" id="volumeBar" min="0" max="100" value="100">
-  </div>
+<div id="mini" class="mini">
+ <div class="miniThumb" onclick="openFull()"><div class="art"><span>♫</span></div></div>
+ <div class="miniInfo" onclick="openFull()"><div class="title" id="miniTitle">Nothing playing</div><div class="artist" id="miniArtist">Zuvo</div></div>
+ <div class="miniBtns">
+  <button onclick="prev()">‹</button><button class="miniPlay" id="miniPlay" onclick="togglePlay()">▶</button><button onclick="next()">›</button><button onclick="openQueue()">☷</button><button onclick="openMiniMenu()">•••</button>
+ </div>
+ <div class="miniLine" onclick="miniSeek(event)"><i id="miniProgress"></i></div>
 </div>
 
-<!-- BOTTOM NAV -->
-<nav class="bottom-nav" id="bottomNav">
-  <button class="nav-btn active" data-view="home">
-    <svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M4 11l8-7 8 7v9a1 1 0 01-1 1h-4v-6H9v6H5a1 1 0 01-1-1v-9z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    <span>Home</span>
-  </button>
-  <button class="nav-btn" data-view="playlists">
-    <svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M4 6h11M4 12h11M4 18h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="19" cy="16" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M19 6v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-    <span>Playlists</span>
-  </button>
-  <button class="nav-btn" data-view="favorites">
-    <svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M12 20s-7-4.4-9.5-9A5.5 5.5 0 0112 6a5.5 5.5 0 019.5 5c-2.5 4.6-9.5 9-9.5 9z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
-    <span>Favorites</span>
-  </button>
-  <button class="nav-btn" data-view="settings">
-    <svg width="21" height="21" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 13a7.6 7.6 0 000-2l2-1.6-2-3.4-2.4 1a7.6 7.6 0 00-1.7-1L15 3h-4l-.3 2.6-1.7 1-2.4-1-2 3.4L6.6 11a7.6 7.6 0 000 2l-2 1.6 2 3.4 2.4-1a7.6 7.6 0 001.7 1L11 21h4l.3-2.6a7.6 7.6 0 001.7-1l2.4 1 2-3.4-2-1.6z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
-    <span>Settings</span>
-  </button>
-</nav>
+<nav class="nav"><div class="navIn">
+ <button data-page="home" class="on" onclick="showPage('home')"><span>⌂</span>Home</button>
+ <button data-page="search" onclick="showPage('search');setTimeout(()=>searchInput.focus(),80)"><span>⌕</span>Search</button>
+ <button data-page="library" onclick="showPage('library')"><span>♫</span>Library</button>
+ <button data-page="liked" onclick="showPage('liked')"><span>♥</span>Liked</button>
+ <button data-page="playlists" onclick="showPage('playlists')"><span>▦</span>Playlists</button>
+</div></nav>
 
-<!-- CREATE PLAYLIST MODAL -->
-<div class="modal-overlay" id="playlistModal" hidden>
-  <div class="modal">
-    <h3>New Playlist</h3>
-    <input type="text" id="playlistNameInput" placeholder="Playlist name" maxlength="60">
-    <div class="modal-actions">
-      <button class="ghost-btn" id="cancelPlaylistBtn">Cancel</button>
-      <button class="primary-btn" id="confirmPlaylistBtn">Create</button>
-    </div>
+<div id="full" class="full">
+ <div class="fullTop"><button class="circle" onclick="closeFull()">⌄</button><b>NOW PLAYING</b><button class="circle" onclick="openPlayerMenu()">•••</button></div>
+ <div class="fullMain">
+  <div class="fullArt" id="fullArt"><div class="art"><span>♫</span></div></div>
+  <div class="fullTitle" id="fullTitle">Nothing playing</div>
+  <div class="fullArtist" id="fullArtist">Zuvo</div>
+  <div class="seek" onclick="fullSeek(event)"><i id="fullProgress"></i></div>
+  <div class="times"><span id="curTime">0:00</span><span id="durTime">0:00</span></div>
+  <div class="controls">
+   <button id="shuffleBtn" onclick="toggleShuffle()">⤨</button>
+   <button onclick="prev()">↶</button>
+   <button class="mainPlay" id="fullPlay" onclick="togglePlay()">▶</button>
+   <button onclick="next()">↷</button>
+   <button id="repeatBtn" onclick="toggleRepeat()">↻</button>
   </div>
+  <div class="playerTools">
+   <button class="tool" onclick="openQueue()">☷ Queue</button>
+   <button class="tool" onclick="queueCurrent()">＋ Queue</button>
+   <button class="tool" onclick="toggleLike(current?.id)">♥ Like</button>
+   <button class="tool" onclick="toggleMute()">🔇</button>
+   <button class="tool" onclick="openSleep()">◷ Sleep</button>
+  </div>
+ </div>
 </div>
 
-<!-- ADD TO PLAYLIST MODAL -->
-<div class="modal-overlay" id="addToPlaylistModal" hidden>
-  <div class="modal">
-    <h3>Add to Playlist</h3>
-    <div class="modal-list" id="addToPlaylistList"></div>
-    <div class="modal-actions">
-      <button class="ghost-btn" id="cancelAddToPlaylistBtn">Close</button>
-    </div>
+<input id="fileInput" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac" multiple hidden>
+<audio id="audio" preload="metadata"></audio>
+<div id="toast" class="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id),audio=$("audio");
+let songs=read("zuvoSongs",[]),liked=read("zuvoLiked",[]),recent=read("zuvoRecent",[]),playlists=read("zuvoPlaylists",[]);
+let queue=[],current=null,shuffle=false,repeat=false,filter="all",sortMode="recent",db=null,objectURL=null,timer=null,toaster=null;
+
+function read(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}}
+function save(){localStorage.setItem("zuvoSongs",JSON.stringify(songs));localStorage.setItem("zuvoLiked",JSON.stringify(liked));localStorage.setItem("zuvoRecent",JSON.stringify(recent));localStorage.setItem("zuvoPlaylists",JSON.stringify(playlists))}
+function esc(s){return String(s??"").replace(/[&<>"']/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[x]))}
+function toast(s){$("toast").textContent=s;$("toast").classList.add("show");clearTimeout(toaster);toaster=setTimeout(()=>$("toast").classList.remove("show"),1900)}
+function fmt(t){return isFinite(t)?Math.floor(t/60)+":"+String(Math.floor(t%60)).padStart(2,"0"):"0:00"}
+function art(s){return `<div class="art"><span>♫</span></div>`}
+
+function showPage(id){
+ document.querySelectorAll(".page").forEach(x=>x.classList.toggle("active",x.id===id));
+ document.querySelectorAll(".nav button").forEach(x=>x.classList.toggle("on",x.dataset.page===id));
+ history.replaceState(null,"","#"+id);
+ if(id==="home")renderHome();if(id==="library")renderLibrary();if(id==="liked")renderLiked();if(id==="playlists")renderPlaylists();if(id==="recent")renderRecent()
+}
+function openImport(){$("fileInput").click()}
+function closeModal(){
+ let m=document.querySelector(".modal");
+ if(!m)return;
+ if(m.classList.contains("playlistModal")){
+  m.classList.add("plClosing");setTimeout(()=>m.remove(),180);
+ }else m.remove();
+}
+function modal(content){
+ closeModal();let m=document.createElement("div");m.className="modal";m.innerHTML=`<div class="sheet">${content}</div>`;
+ m.addEventListener("click",e=>{if(e.target===m)m.remove()});document.body.appendChild(m);return m
+}
+
+function songRow(s){
+ return `<div class="row">
+ <div class="thumb" onclick="playSong('${s.id}')">${art(s)}</div>
+ <div class="info" onclick="playSong('${s.id}')"><div class="title">${esc(s.name)}</div><div class="artist">${esc(s.artist||"Unknown Artist")} • ${esc(s.album||"Zuvo")}</div></div>
+ <button class="more" onclick="songMenu('${s.id}')">${liked.includes(s.id)?"♥":"•••"}</button>
+ </div>`
+}
+
+function renderHome(){
+ $("quick").innerHTML=`
+ <button class="quickCard" onclick="showPage('liked')"><div class="quickIcon">♥</div><div class="quickTitle">Liked Songs</div><div class="quickSub">${liked.length} songs</div></button>
+ <button class="quickCard" onclick="showPage('recent')"><div class="quickIcon">◷</div><div class="quickTitle">Recently Played</div><div class="quickSub">${recent.length} songs</div></button>
+ <button class="quickCard" onclick="showPage('playlists')"><div class="quickIcon">▦</div><div class="quickTitle">Playlists</div><div class="quickSub">${playlists.length} playlists</div></button>
+ <button class="quickCard" onclick="openQueue()"><div class="quickIcon">☷</div><div class="quickTitle">Queue</div><div class="quickSub">${queue.length} upcoming</div></button>`;
+ let list=recent.map(id=>songs.find(s=>s.id===id)).filter(Boolean).slice(0,7);
+ $("homeRecent").innerHTML=list.map(songRow).join("");$("homeEmpty").style.display=list.length?"none":"block"
+}
+function sorted(list){
+ let a=[...list];
+ if(sortMode==="name")a.sort((x,y)=>x.name.localeCompare(y.name));
+ if(sortMode==="artist")a.sort((x,y)=>(x.artist||"").localeCompare(y.artist||""));
+ if(sortMode==="newest")a.sort((x,y)=>(y.addedAt||0)-(x.addedAt||0));
+ return a
+}
+function renderLibrary(){
+ let list=songs;if(filter==="liked")list=songs.filter(s=>liked.includes(s.id));if(filter==="recent")list=recent.map(id=>songs.find(s=>s.id===id)).filter(Boolean);
+ $("libraryList").innerHTML=sorted(list).map(songRow).join("")||`<div class="empty">No songs found in this section.</div>`
+}
+function renderLiked(){$("likedList").innerHTML=songs.filter(s=>liked.includes(s.id)).map(songRow).join("")||`<div class="empty">No liked songs yet.</div>`}
+function renderRecent(){$("recentList").innerHTML=recent.map(id=>songs.find(s=>s.id===id)).filter(Boolean).map(songRow).join("")||`<div class="empty">Nothing played yet.</div>`}
+function renderPlaylists(){
+ $("playlistGrid").innerHTML=playlists.map(p=>`<button class="playlistCard" onclick="openPlaylist('${p.id}')"><div class="plCardArt">${art(p)}</div><div class="title">${esc(p.name)}</div><div class="artist">${p.songs.length} songs</div></button>`).join("")||`<div class="empty" style="grid-column:1/-1">No playlists yet.<br><br><button class="btn" onclick="newPlaylist()">Create Playlist</button></div>`
+}
+function renderAll(){renderHome();renderLibrary();renderLiked();renderRecent();renderPlaylists();updatePlayer()}
+
+function doSearch(v){
+ v=v.trim().toLowerCase();
+ $("searchResults").innerHTML=!v?`<div class="empty">Search your Zuvo library.</div>`:songs.filter(s=>(s.name+" "+s.artist+" "+s.album).toLowerCase().includes(v)).map(songRow).join("")||`<div class="empty">No matching songs.</div>`
+}
+function setFilter(x,b){filter=x;document.querySelectorAll(".chip").forEach(c=>c.classList.remove("on"));b.classList.add("on");renderLibrary()}
+function openSort(){modal(`<div class="sheetHead"><h3>Sort Library</h3><button class="circle" onclick="closeModal()">×</button></div>
+ <button class="listBtn" onclick="setSort('recent')">Recently Added</button><button class="listBtn" onclick="setSort('name')">Name</button><button class="listBtn" onclick="setSort('artist')">Artist</button><button class="listBtn" onclick="setSort('newest')">Newest First</button>`)}
+function setSort(x){sortMode=x;closeModal();renderLibrary()}
+
+function newPlaylist(){
+ let m=modal(`<div class="plPicker small">
+  <div class="plHead"><h3>Create Playlist</h3><button class="circle" onclick="closeModal()">×</button></div>
+  <input id="plName" class="formInput" placeholder="Playlist name" maxlength="50" autocomplete="off">
+  <div class="plFormActions">
+   <button class="btn plCancel" onclick="closeModal()">Cancel</button>
+   <button class="btn" onclick="createPlaylist()">Create</button>
   </div>
-</div>
+ </div>`);
+ m.classList.add("playlistModal");
+ setTimeout(()=>$("plName")?.focus(),80);
+}
+function createPlaylist(){let n=$("plName").value.trim();if(!n)return toast("Enter a playlist name");playlists.push({id:"pl_"+Date.now(),name:n,songs:[]});save();closeModal();renderAll();toast("Playlist created")}
+function openPlaylist(id){
+ let p=playlists.find(x=>x.id===id);if(!p)return;
+ let list=p.songs.map(sid=>songs.find(s=>s.id===sid)).filter(Boolean);
+ let available=songs.filter(s=>!p.songs.includes(s.id));
+ modal(`<div class="sheetHead"><div style="flex:1"><h3>${esc(p.name)}</h3><div class="artist">${list.length} songs</div></div><button class="circle" onclick="closeModal()">×</button></div>
+ <div class="actions"><button class="btn" onclick="playPlaylist('${id}')">▶ Play</button><button class="btn danger" onclick="deletePlaylist('${id}')">Delete</button></div>
 
-<!-- SONG MENU MODAL -->
-<div class="modal-overlay" id="songMenuModal" hidden>
-  <div class="modal sheet">
-    <button class="sheet-item" id="menuFavorite">Toggle Favorite</button>
-    <button class="sheet-item" id="menuAddPlaylist">Add to Playlist</button>
-    <button class="sheet-item" id="menuRemovePlaylist" hidden>Remove from this Playlist</button>
-    <button class="sheet-item danger" id="menuDelete">Delete Song</button>
-    <button class="sheet-item" id="menuCancel">Cancel</button>
+ <div class="plSectionTitle"><span>In Playlist</span><span style="opacity:.55">·</span><span>${list.length}</span></div>
+ <div class="list">
+  ${list.map(s=>`<div class="plInRow">
+    <div class="thumb" onclick="playSong('${s.id}')">${art(s)}</div>
+    <div class="info" onclick="playSong('${s.id}')"><div class="title">${esc(s.name)}</div><div class="artist">${esc(s.artist||"Unknown Artist")} • ${esc(s.album||"Zuvo")}</div></div>
+    <button class="plRemoveBtn" aria-label="Remove ${esc(s.name)} from playlist" onclick="removeFromPlaylist('${id}','${s.id}')">−</button>
+  </div>`).join("")||`<div class="empty">Playlist is empty.</div>`}
+ </div>
+
+ <div class="plSectionTitle"><span>Add Songs</span><span style="opacity:.55">·</span><span>${available.length} available</span></div>
+ <div class="plAvailable">
+  ${available.map(s=>`<div class="plAddRow">
+    <div class="thumb" onclick="playSong('${s.id}')">${art(s)}</div>
+    <div class="info" onclick="playSong('${s.id}')"><div class="title">${esc(s.name)}</div><div class="artist">${esc(s.artist||"Unknown Artist")} • ${esc(s.album||"Zuvo")}</div></div>
+    <button class="plAddBtn" aria-label="Add ${esc(s.name)} to playlist" onclick="addSongFromPlaylist('${id}','${s.id}')">＋</button>
+  </div>`).join("")||`<div class="empty">All songs are already in this playlist.</div>`}
+ </div>`)
+}
+function addSongFromPlaylist(pid,sid){
+ let p=playlists.find(x=>x.id===pid);if(!p)return;
+ if(p.songs.includes(sid)){toast("Already in "+p.name);return}
+ p.songs.push(sid);save();renderPlaylists();openPlaylist(pid);toast("Added to "+p.name);
+}
+
+function deletePlaylist(id){if(!confirm("Delete this playlist?"))return;playlists=playlists.filter(p=>p.id!==id);save();closeModal();renderAll();toast("Playlist deleted")}
+function playPlaylist(id){let p=playlists.find(x=>x.id===id);if(!p)return;let a=p.songs.map(id=>songs.find(s=>s.id===id)).filter(Boolean);if(!a.length)return toast("Playlist is empty");queue=a.slice(1).map(s=>s.id);playSong(a[0].id)}
+function addToPlaylist(id){
+ let s=songs.find(x=>x.id===id);if(!s)return;
+ if(!playlists.length){
+  openCreatePlaylistForSong(id);
+  return;
+ }
+ openPlaylistPicker(id);
+}
+function openPlaylistPicker(sid){
+ let s=songs.find(x=>x.id===sid);if(!s)return;
+ let m=modal(`<div class="plPicker">
+  <div class="plHead">
+   <div style="flex:1"><h3>Add to Playlist</h3><div class="plSub">${esc(s.name)}</div></div>
+   <button class="circle" onclick="closeModal()">×</button>
   </div>
-</div>
+  <div class="plRows">
+   ${playlists.map(p=>{
+    let selected=p.songs.includes(sid);
+    return `<button class="plRow ${selected?"selected":""}" onclick="addSongToPlaylist('${p.id}','${sid}')">
+      <div class="plArt">${art(p)}</div>
+      <div class="plMeta"><div class="plName">${esc(p.name)}</div><div class="plCount">${p.songs.length} ${p.songs.length===1?"song":"songs"}</div></div>
+      <div class="plCheck">${selected?"✓":"○"}</div>
+    </button>`
+   }).join("")}
+  </div>
+  <button class="plCreate" onclick="openCreatePlaylistForSong('${sid}')">＋ Create New Playlist</button>
+ </div>`);
+ m.classList.add("playlistModal");
+}
+function addSongToPlaylist(pid,sid){
+ let p=playlists.find(x=>x.id===pid);if(!p)return;
+ if(p.songs.includes(sid)){closeModal();toast("Already in "+p.name);return}
+ p.songs.push(sid);save();closeModal();renderPlaylists();toast("Added to "+p.name);
+}
+function openCreatePlaylistForSong(sid){
+ let s=songs.find(x=>x.id===sid);if(!s)return;
+ let m=modal(`<div class="plPicker small">
+  <div class="plHead"><div style="flex:1"><h3>Create Playlist</h3><div class="plSub">${esc(s.name)}</div></div><button class="circle" onclick="openPlaylistPicker('${sid}')">×</button></div>
+  <input id="plNameForSong" class="formInput" placeholder="Playlist name" maxlength="50" autocomplete="off">
+  <div class="plFormActions">
+   <button class="btn plCancel" onclick="openPlaylistPicker('${sid}')">Cancel</button>
+   <button class="btn" onclick="createPlaylistForSong('${sid}')">Create</button>
+  </div>
+ </div>`);
+ m.classList.add("playlistModal");
+ setTimeout(()=>$("plNameForSong")?.focus(),80);
+}
+function createPlaylistForSong(sid){
+ let input=$("plNameForSong"),n=input?.value.trim();
+ if(!n)return toast("Enter a playlist name");
+ let existing=playlists.find(p=>p.name.toLowerCase()===n.toLowerCase());
+ if(existing){
+  closeModal();
+  if(existing.songs.includes(sid))toast("Already in "+existing.name);
+  else{existing.songs.push(sid);save();renderAll();toast("Added to "+existing.name)}
+  return;
+ }
+ let p={id:"pl_"+Date.now()+"_"+Math.random().toString(36).slice(2,7),name:n,songs:[sid]};
+ playlists.push(p);save();closeModal();renderAll();toast("Added to "+p.name);
+}
+function removeFromPlaylist(pid,sid){
+ let p=playlists.find(x=>x.id===pid);if(!p)return;
+ p.songs=p.songs.filter(x=>x!==sid);save();closeModal();openPlaylist(pid);renderPlaylists();toast("Removed from playlist");
+}
+function playlistSongMenu(pid,sid){
+ let p=playlists.find(x=>x.id===pid),s=songs.find(x=>x.id===sid);if(!p||!s)return;
+ modal(`<div class="sheetHead"><div style="flex:1"><h3>${esc(s.name)}</h3><div class="artist">${esc(s.artist||"Unknown Artist")} • ${esc(p.name)}</div></div><button class="circle" onclick="closeModal()">×</button></div>
+  <button class="listBtn" onclick="playSong('${sid}');closeModal()">▶ Play</button>
+  <button class="listBtn" onclick="toggleLike('${sid}');closeModal()">♥ ${liked.includes(sid)?"Unlike":"Like"}</button>
+  <button class="listBtn" onclick="addToQueue('${sid}');closeModal()">＋ Add to Queue</button>
+  <button class="listBtn" onclick="addToPlaylist('${sid}')">♫ Add to Playlist</button>
+  <button class="listBtn" style="color:var(--red)" onclick="removeFromPlaylist('${pid}','${sid}')">− Remove from Playlist</button>`)
+}
 
-<div class="toast" id="toast"></div>
+function songMenu(id){
+ let s=songs.find(x=>x.id===id);if(!s)return;
+ modal(`<div class="sheetHead"><div style="flex:1"><h3>${esc(s.name)}</h3><div class="artist">${esc(s.artist)}</div></div><button class="circle" onclick="closeModal()">×</button></div>
+ <button class="listBtn" onclick="playSong('${id}');closeModal()">▶ Play</button>
+ <button class="listBtn" onclick="toggleLike('${id}');closeModal()">♥ ${liked.includes(id)?"Unlike":"Like"}</button>
+ <button class="listBtn" onclick="addToQueue('${id}');closeModal()">＋ Add to Queue</button>
+ <button class="listBtn" onclick="addToPlaylist('${id}');closeModal()">♫ Add to Playlist</button>
+ <button class="listBtn" style="color:var(--red)" onclick="removeSong('${id}')">Delete from Library</button>`)
+}
+function toggleLike(id){if(!id)return;liked=liked.includes(id)?liked.filter(x=>x!==id):[...liked,id];save();renderAll();toast(liked.includes(id)?"Added to Liked":"Removed from Liked")}
 
-<script src="script.js"></script>
+function dbOpen(){
+ return new Promise((resolve,reject)=>{
+  if(db)return resolve(db);let r=indexedDB.open("ZuvoGlassAudio",1);
+  r.onupgradeneeded=e=>{if(!e.target.result.objectStoreNames.contains("audio"))e.target.result.createObjectStore("audio")};
+  r.onsuccess=e=>{db=e.target.result;resolve(db)};r.onerror=()=>reject(r.error)
+ })
+}
+async function putBlob(id,b){let d=await dbOpen();return new Promise((res,rej)=>{let t=d.transaction("audio","readwrite");t.objectStore("audio").put(b,id);t.oncomplete=res;t.onerror=()=>rej(t.error)})}
+async function getBlob(id){try{let d=await dbOpen();return await new Promise((res,rej)=>{let r=d.transaction("audio").objectStore("audio").get(id);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}catch{return null}}
+async function delBlob(id){try{let d=await dbOpen();d.transaction("audio","readwrite").objectStore("audio").delete(id)}catch{}}
+
+$("fileInput").addEventListener("change",async e=>{await importFiles(e.target.files);e.target.value=""});
+async function importFiles(files){
+ files=[...files];if(!files.length)return;toast("Importing…");let count=0;
+ for(const f of files){
+  if(!f.type.startsWith("audio/")&&!/\.(mp3|wav|m4a|aac|ogg|flac)$/i.test(f.name))continue;
+  let id="song_"+Date.now()+"_"+Math.random().toString(36).slice(2,8);
+  await putBlob(id,f);songs.push({id,name:f.name.replace(/\.[^/.]+$/,""),artist:"Local Music",album:"Zuvo Library",size:f.size,type:f.type,addedAt:Date.now()});count++
+ }
+ save();renderAll();toast(count?`${count} song${count>1?"s":""} added to Zuvo`:"No audio files found")
+}
+
+async function playSong(id){
+ let i=songs.findIndex(s=>s.id===id);if(i<0)return;current=songs[i];
+ let blob=await getBlob(id);if(objectURL){URL.revokeObjectURL(objectURL);objectURL=null}
+ let src=blob?(objectURL=URL.createObjectURL(blob)):current.url;if(!src)return toast("Audio file unavailable");
+ audio.src=src;audio.load();try{await audio.play()}catch{toast("Tap play to start")}
+ recent=[id,...recent.filter(x=>x!==id)].slice(0,50);save();updatePlayer();renderHome()
+}
+function togglePlay(){if(!current)return songs.length?playSong(songs[0].id):toast("Add music first");audio.paused?audio.play():audio.pause()}
+function next(){
+ if(queue.length)return playSong(queue.shift());
+ if(!songs.length)return;
+ if(repeat&&current)return playSong(current.id);
+ let i=current?songs.findIndex(s=>s.id===current.id):-1;
+ let n=shuffle?Math.floor(Math.random()*songs.length):(i+1)%songs.length;playSong(songs[n].id)
+}
+function prev(){if(audio.currentTime>3){audio.currentTime=0;return}if(!songs.length)return;let i=current?songs.findIndex(s=>s.id===current.id):0;playSong(songs[(i-1+songs.length)%songs.length].id)}
+function playAll(){if(!songs.length)return toast("Add music first");queue=[];playSong(songs[0].id)}
+function shuffleAll(){if(!songs.length)return toast("Add music first");shuffle=true;let a=[...songs].sort(()=>Math.random()-.5);queue=a.slice(1).map(s=>s.id);playSong(a[0].id);$("shuffleBtn").classList.add("active")}
+function toggleShuffle(){shuffle=!shuffle;$("shuffleBtn").classList.toggle("active",shuffle);toast(shuffle?"Shuffle on":"Shuffle off")}
+function toggleRepeat(){repeat=!repeat;$("repeatBtn").classList.toggle("active",repeat);toast(repeat?"Repeat on":"Repeat off")}
+function addToQueue(id){if(!queue.includes(id))queue.push(id);toast("Added to queue");renderHome()}
+function queueCurrent(){if(current)addToQueue(current.id);else toast("Nothing playing")}
+function openQueue(){
+ modal(`<div class="sheetHead"><div style="flex:1"><h3>Queue</h3><div class="artist">${queue.length} upcoming</div></div><button class="circle" onclick="closeModal()">×</button></div>
+ ${queue.map(id=>{let s=songs.find(x=>x.id===id);return s?`<div class="row"><div class="thumb">${art(s)}</div><div class="info" onclick="playSong('${id}');closeModal()"><div class="title">${esc(s.name)}</div><div class="artist">${esc(s.artist)}</div></div><button class="more" onclick="queue=queue.filter(x=>x!=='${id}');closeModal();openQueue()">×</button></div>`:""}).join("")||`<div class="empty">Queue is empty.</div>`}
+ ${queue.length?`<button class="btn secondary" style="width:100%;margin-top:12px" onclick="queue=[];closeModal();renderAll()">Clear Queue</button>`:""}`)
+}
+
+function removeSong(id){
+ let s=songs.find(x=>x.id===id);if(!s)return;if(!confirm(`Delete "${s.name}"?`))return;
+ songs=songs.filter(x=>x.id!==id);liked=liked.filter(x=>x!==id);recent=recent.filter(x=>x!==id);queue=queue.filter(x=>x!==id);playlists.forEach(p=>p.songs=p.songs.filter(x=>x!==id));delBlob(id);
+ if(current?.id===id){audio.pause();current=null;audio.removeAttribute("src");if(objectURL){URL.revokeObjectURL(objectURL);objectURL=null}}
+ save();closeModal();renderAll();toast("Song deleted")
+}
+
+function updatePlayer(){
+ if(!current){$("mini").classList.remove("show");return}
+ $("mini").classList.add("show");$("miniTitle").textContent=current.name;$("miniArtist").textContent=current.artist||"Local Music";
+ $("miniPlay").textContent=audio.paused?"▶":"Ⅱ";$("fullPlay").textContent=audio.paused?"▶":"Ⅱ";
+ $("fullTitle").textContent=current.name;$("fullArtist").textContent=current.artist||"Local Music";$("fullArt").innerHTML=art(current)
+}
+function openFull(){if(!current)return toast("Nothing playing");$("full").classList.add("open");updatePlayer()}
+function closeFull(){$("full").classList.remove("open")}
+function miniSeek(e){if(!audio.duration)return;let r=e.currentTarget.getBoundingClientRect();audio.currentTime=audio.duration*((e.clientX-r.left)/r.width)}
+function fullSeek(e){if(!audio.duration)return;let r=e.currentTarget.getBoundingClientRect();audio.currentTime=audio.duration*((e.clientX-r.left)/r.width)}
+audio.addEventListener("play",updatePlayer);audio.addEventListener("pause",updatePlayer);audio.addEventListener("ended",next);
+audio.addEventListener("error",()=>current&&toast("This audio file cannot be played"));
+audio.addEventListener("timeupdate",()=>{let p=audio.duration?audio.currentTime/audio.duration*100:0;$("miniProgress").style.width=p+"%";$("fullProgress").style.width=p+"%";$("curTime").textContent=fmt(audio.currentTime);$("durTime").textContent=fmt(audio.duration)});
+
+function openMiniMenu(){
+ if(!current)return toast("Nothing playing");
+ songMenu(current.id);
+}
+
+function openPlayerMenu(){
+ if(!current)return;
+ modal(`<div class="sheetHead"><div style="flex:1"><h3>${esc(current.name)}</h3><div class="artist">${esc(current.artist)}</div></div><button class="circle" onclick="closeModal()">×</button></div>
+ <button class="listBtn" onclick="toggleLike('${current.id}');closeModal()">♥ ${liked.includes(current.id)?"Unlike":"Like"}</button>
+ <button class="listBtn" onclick="addToPlaylist('${current.id}');closeModal()">♫ Add to Playlist</button>
+ <button class="listBtn" onclick="queueCurrent();closeModal()">＋ Add to Queue</button>
+ <button class="listBtn" onclick="openSleep();closeModal()">◷ Sleep Timer</button>`)
+}
+
+let previousVolume=.8;
+function toggleMute(){if(audio.volume>0){previousVolume=audio.volume;audio.volume=0;toast("Muted")}else{audio.volume=previousVolume||.8;toast("Unmuted")}}
+function openSleep(){
+ modal(`<div class="sheetHead"><h3>Sleep Timer</h3><button class="circle" onclick="closeModal()">×</button></div>
+ <button class="listBtn" onclick="setSleep(15);closeModal()">15 minutes</button>
+ <button class="listBtn" onclick="setSleep(30);closeModal()">30 minutes</button>
+ <button class="listBtn" onclick="setSleep(60);closeModal()">1 hour</button>
+ <button class="listBtn" onclick="setSleep(0);closeModal()">Cancel Timer</button>`)
+}
+function setSleep(m){clearTimeout(timer);if(!m)return toast("Timer cancelled");timer=setTimeout(()=>{audio.pause();toast("Sleep timer finished")},m*60000);toast("Sleep timer: "+m+" minutes")}
+function clearRecent(){recent=[];save();renderAll();toast("Recently played cleared")}
+
+function openSettings(){
+ modal(`<div class="sheetHead"><div style="flex:1"><h3>Zuvo Settings</h3><div class="artist">Glass Music Experience</div></div><button class="circle" onclick="closeModal()">×</button></div>
+ <div style="padding:13px 0;border-bottom:1px solid var(--line)"><b>Volume</b><input class="settingsRange" type="range" min="0" max="1" step=".01" value="${audio.volume}" oninput="audio.volume=this.value"></div>
+ <button class="listBtn" onclick="audio.playbackRate=audio.playbackRate>=2?1:audio.playbackRate+.25;toast(audio.playbackRate+'x speed')">Playback Speed · ${audio.playbackRate}x</button>
+ <button class="listBtn" onclick="openSleep();closeModal()">◷ Sleep Timer</button>
+ <button class="listBtn" onclick="openQueue();closeModal()">☷ Queue</button>
+ <button class="listBtn" onclick="clearRecent();closeModal()">Clear Recently Played</button>
+ <button class="listBtn" onclick="openImport();closeModal()">＋ Add Music</button>
+ <button class="listBtn" style="color:var(--red)" onclick="resetZuvo()">Reset All Data</button>
+ <div class="dropZone">Tip: you can also drag audio files into this page.</div>`)
+}
+function resetZuvo(){
+ if(!confirm("Delete your complete Zuvo library, playlists, likes and history?"))return;
+ songs=[];liked=[];recent=[];playlists=[];queue=[];current=null;audio.pause();audio.removeAttribute("src");save();closeModal();renderAll();updatePlayer();toast("Zuvo has been reset")
+}
+
+document.addEventListener("dragover",e=>{if([...e.dataTransfer.items].some(x=>x.kind==="file"))e.preventDefault()});
+document.addEventListener("drop",e=>{let f=[...e.dataTransfer.files].filter(x=>x.type.startsWith("audio/")||/\.(mp3|wav|m4a|aac|ogg|flac)$/i.test(x.name));if(f.length){e.preventDefault();importFiles(f)}});
+document.addEventListener("keydown",e=>{
+ if(["INPUT","TEXTAREA"].includes(document.activeElement?.tagName))return;
+ if(e.code==="Space"){e.preventDefault();togglePlay()}
+ if(e.key==="ArrowRight")audio.currentTime=Math.min(audio.duration||0,audio.currentTime+5);
+ if(e.key==="ArrowLeft")audio.currentTime=Math.max(0,audio.currentTime-5);
+ if(e.key.toLowerCase()==="n")next();if(e.key.toLowerCase()==="m")toggleMute();if(e.key==="Escape")closeFull()
+});
+window.addEventListener("beforeunload",save);
+
+renderAll();
+if(location.hash&&$(location.hash.slice(1)))showPage(location.hash.slice(1));
+</script>
 </body>
 </html>
