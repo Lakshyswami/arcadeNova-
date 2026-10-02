@@ -1,39 +1,318 @@
-<h1>Mobile Compatibility Warning</h1>
-
-<p>
-  This website may not be safe or fully compatible with your mobile device.<br>
-  For your security, we recommend opening this link on a PC or laptop.<br>
-  Proceed at your own risk.
-</p>
-
-
-
-
-
-<button class="ignore-btn">Ignore Warning</button>
-
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Glass Vault</title>
 <style>
-  .ignore-btn {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+:root{--bg:#07080f;--txt:#f3f5ff;--mut:#a3abcc;--glass:rgba(255,255,255,.08);--bd:rgba(255,255,255,.18);--hi:rgba(255,255,255,.35);--bad:#ff6b8b;
+color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--txt);font-family:"Inter","SF Pro Display",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{overflow-x:hidden}
+.orb{position:fixed;border-radius:50%;filter:blur(70px);opacity:.5;z-index:0;pointer-events:none}
+.o1{width:60vmax;height:60vmax;background:#5b45ff;top:-20vmax;left:-15vmax}
+.o2{width:50vmax;height:50vmax;background:#12c7b0;bottom:-18vmax;right:-14vmax}
+.o3{width:30vmax;height:30vmax;background:#ff5fa2;top:40%;left:55%;opacity:.3}
+#wp{position:fixed;inset:0;z-index:0;background:#000 center/cover no-repeat;display:none}
+#wp.on{display:block}
+#wp::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.28)}
+.glass{background:var(--glass);border:1px solid var(--bd);box-shadow:inset 0 1px 0 var(--hi),0 20px 50px rgba(0,0,0,.35);backdrop-filter:blur(26px) saturate(160%);-webkit-backdrop-filter:blur(26px) saturate(160%)}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+.screen{position:relative;z-index:1;min-height:100vh;min-height:100dvh}
+.hidden{display:none!important}
 
-    padding: 13px 28px;
-    border: 1px solid #333;
-    border-radius: 14px;
-    background: #000;
-    color: #fff;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
+/* lock screen (passcode style) */
+#lock{display:flex;flex-direction:column;align-items:center;padding:11vh 20px 24px;background:rgba(0,0,0,.35)}
+.ttl{font-size:20px;font-weight:500;text-align:center;line-height:1.25;min-height:50px;max-width:260px;padding-top:2px}
+.dots{display:flex;gap:26px;margin:20px 0 46px}
+.dots i{width:14px;height:14px;border-radius:50%;border:1.5px solid #fff;transition:background .12s}
+.dots i.on{background:#fff}
+.pad{display:grid;grid-template-columns:repeat(3,78px);gap:16px 26px}
+.k{width:78px;height:78px;border-radius:50%;background:rgba(72,72,74,.6);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:34px;font-weight:300;line-height:1;transition:background .1s}
+.k small{font-size:10px;font-weight:600;letter-spacing:2.5px;margin-top:4px;height:11px;padding-left:2.5px}
+.k:active{background:rgba(255,255,255,.4)}
+.k.z{grid-column:2}
+.del{grid-column:3;align-self:center;font-size:18px;height:78px}
+.shake{animation:sh .38s}
+@keyframes sh{20%,60%{transform:translateX(-10px)}40%,80%{transform:translateX(10px)}}
 
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-    z-index: 9999;
-    white-space: nowrap;
-  }
+/* vault */
+#vault{padding:0 16px 110px;max-width:1100px;margin:0 auto}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;margin:12px 0 18px;padding:12px 14px 12px 20px;border-radius:24px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+header h2{margin:0;font-size:19px;font-weight:650}
+header small{display:block;color:var(--mut);font-size:12.5px;margin-top:2px}
+.hb{display:flex;gap:8px}
+.btn{height:42px;padding:0 18px;border-radius:21px;background:var(--glass);border:1px solid var(--bd);box-shadow:inset 0 1px 0 var(--hi);font-weight:550;font-size:14.5px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn:active{transform:scale(.96)}
+.pri{background:linear-gradient(145deg,rgba(139,124,255,.7),rgba(54,214,195,.55))}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}
+.tile{position:relative;aspect-ratio:1;border-radius:20px;overflow:hidden;padding:0;background:var(--glass);border:1px solid var(--bd);box-shadow:0 10px 28px rgba(0,0,0,.35)}
+.tile img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
+.tile:hover img{transform:scale(1.06)}
+.empty{margin:12vh auto 0;max-width:320px;padding:34px 24px;border-radius:30px;text-align:center}
+.empty b{font-size:18px}.empty p{color:var(--mut);margin:8px 0 18px;font-size:14px}
+.fab{position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:6;width:62px;height:62px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,rgba(139,124,255,.75),rgba(54,214,195,.6));border:1px solid var(--hi);box-shadow:inset 0 1px 0 var(--hi),0 14px 34px rgba(91,69,255,.5)}
+.fab svg{width:28px;height:28px}
+.fab:active{transform:scale(.92)}
 
-  .ignore-btn:active {
-    transform: translate(-50%, -50%) scale(0.96);
-  }
+/* preview */
+#pv{position:fixed;inset:0;z-index:20;background:rgba(4,5,10,.92);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);display:flex;align-items:center;justify-content:center;touch-action:pan-y}
+#pv img{width:100%;height:100%;object-fit:contain;user-select:none;-webkit-user-drag:none}
+.top,.nav{position:absolute;z-index:2}
+.top{top:calc(12px + env(safe-area-inset-top,0px));left:12px;right:12px;display:flex;justify-content:space-between;align-items:center}
+.round{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:var(--glass);border:1px solid var(--bd);box-shadow:inset 0 1px 0 var(--hi);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);font-size:20px}
+.round svg{width:22px;height:22px}
+.cnt{padding:10px 16px;border-radius:22px;font-size:14px}
+.nav{top:50%;transform:translateY(-50%)}
+#prev{left:12px}#next{right:12px}
+
+/* settings */
+#set{position:fixed;inset:0;z-index:25;background:rgba(3,4,10,.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:flex-end;justify-content:center}
+.sheet{width:100%;max-width:480px;max-height:90dvh;overflow-y:auto;border-radius:30px 30px 0 0;padding:20px 20px calc(24px + env(safe-area-inset-bottom,0px));background:rgba(28,30,48,.72)}
+@media(min-width:600px){#set{align-items:center}.sheet{border-radius:30px}}
+.sh{display:flex;justify-content:space-between;align-items:center;font-size:20px;font-weight:650}
+.sheet h3{margin:22px 0 12px;font-size:15px;font-weight:600;color:var(--mut)}
+.ths{display:flex;gap:12px}
+.ths>div{flex:1;text-align:center;font-size:12.5px;color:var(--mut)}
+.th{aspect-ratio:9/14;max-height:170px;width:100%;margin:0 auto 6px;border-radius:18px;border:1px solid var(--bd);background:rgba(255,255,255,.06) center/cover no-repeat;display:grid;place-items:center;font-size:12px}
+.th.has span{display:none}
+.seg{display:flex;padding:4px;border-radius:16px;background:rgba(255,255,255,.07);border:1px solid var(--bd);margin:14px 0}
+.seg button{flex:1;height:36px;border-radius:12px;font-size:13.5px;color:var(--mut)}
+.seg button.on{background:rgba(255,255,255,.2);color:#fff;font-weight:600}
+.row{display:flex;gap:10px}.row .btn{flex:1}
+.sheet input[type=password]{width:100%;height:46px;margin-bottom:10px;border-radius:14px;background:rgba(255,255,255,.07);border:1px solid var(--bd);color:#fff;font:inherit;padding:0 14px;outline:0}
+.sheet input:focus{border-color:#8b7cff}
+.sheet .pri{width:100%}
+.smsg{min-height:20px;margin-top:10px;font-size:13px;text-align:center;color:var(--bad)}
+.smsg.ok{color:#5eead4}
+.toast{position:fixed;left:50%;bottom:calc(100px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:40;padding:11px 20px;border-radius:22px;font-size:14px;white-space:nowrap}
+@media(max-width:600px){.nav{display:none}.grid{grid-template-columns:repeat(3,1fr);gap:8px}.tile{border-radius:14px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+:root:not([data-theme="light"]){--bg:#07080f}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#07080f}}
+:root[data-theme="dark"]{--bg:#07080f}
 </style>
+</head>
+<body>
+<div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div>
+<div id="wp"></div>
+
+<main id="lock" class="screen">
+  <div class="ttl" id="ttl">Enter Passcode</div>
+  <div class="dots" id="dots"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="pad" id="pad"></div>
+</main>
+
+<main id="vault" class="screen hidden">
+  <header class="glass">
+    <div><h2>My Vault</h2><small id="count">0 photos</small></div>
+    <div class="hb"><button class="btn" id="setBtn">Settings</button><button class="btn" id="lockBtn">Lock</button></div>
+  </header>
+  <div id="empty" class="empty glass hidden">
+    <b>No photos yet</b>
+    <p>Add photos and they stay hidden here, saved on this device.</p>
+    <button class="btn" id="emptyAdd">Add photos</button>
+  </div>
+  <div class="grid" id="grid"></div>
+  <button class="fab" id="add" aria-label="Add photos"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+  <input type="file" id="file" accept="image/*" multiple hidden>
+</main>
+
+<div id="pv" class="hidden">
+  <div class="top">
+    <button class="round" id="close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <span class="cnt glass" id="pcnt"></span>
+    <button class="round" id="del" aria-label="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="#ff8fa8" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg></button>
+  </div>
+  <button class="round nav" id="prev" aria-label="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+  <img id="pimg" alt="">
+  <button class="round nav" id="next" aria-label="Next"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
+</div>
+
+<div id="set" class="hidden">
+  <div class="sheet glass">
+    <div class="sh"><span>Settings</span><button class="round" id="sClose" aria-label="Close">×</button></div>
+    <h3>Wallpaper</h3>
+    <div class="ths">
+      <div><div class="th" id="tLock"><span>Default</span></div>Lock screen</div>
+      <div><div class="th" id="tHome"><span>Default</span></div>Home screen</div>
+    </div>
+    <div class="seg" id="seg">
+      <button data-t="both" class="on">Both</button><button data-t="lock">Lock screen</button><button data-t="home">Home screen</button>
+    </div>
+    <div class="row"><button class="btn pri" id="wpPick">Choose photo</button><button class="btn" id="wpReset">Reset</button></div>
+    <input type="file" id="wpFile" accept="image/*" hidden>
+    <h3>Change password</h3>
+    <input id="pc" type="password" inputmode="numeric" maxlength="6" placeholder="Current password" autocomplete="off">
+    <input id="pn" type="password" inputmode="numeric" maxlength="6" placeholder="New password (6 digits)" autocomplete="off">
+    <input id="pr" type="password" inputmode="numeric" maxlength="6" placeholder="Confirm new password" autocomplete="off">
+    <button class="btn pri" id="pSave">Save password</button>
+    <div class="smsg" id="smsg"></div>
+  </div>
+</div>
+
+<script>
+const PASS="030907";
+const $=id=>document.getElementById(id);
+let entered="",photos=[],urls=new Map(),cur=0,db=null,passHash="",wp={lock:null,home:null},wpU={},locked=true,picking=false,target="both",busy=false;
+
+/* ---------- storage ---------- */
+async function hash(s){try{const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode("gv:"+s));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}catch(e){return"gv:"+s}}
+function openDB(){return new Promise((res,rej)=>{try{
+  const r=indexedDB.open("glass-vault",2);
+  r.onupgradeneeded=()=>{const d=r.result;
+    if(!d.objectStoreNames.contains("p"))d.createObjectStore("p",{keyPath:"id",autoIncrement:true});
+    if(!d.objectStoreNames.contains("s"))d.createObjectStore("s");};
+  r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);}catch(e){rej(e)}});}
+const tx=(s,m)=>db.transaction(s,m).objectStore(s);
+const req=r=>new Promise((res,rej)=>{r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+const sget=k=>req(tx("s","readonly").get(k));
+const sset=(k,v)=>req(tx("s","readwrite").put(v,k));
+const sdel=k=>req(tx("s","readwrite").delete(k));
+const urlOf=p=>{if(!urls.has(p.id))urls.set(p.id,URL.createObjectURL(p.blob));return urls.get(p.id)};
+
+const ready=(async()=>{
+  try{db=await openDB();passHash=(await sget("pass"))||"";
+    for(const k of["lock","home"])wp[k]=(await sget("wp"+k))||null;}catch(e){}
+  if(!passHash)passHash=await hash(PASS);
+  makeUrls();applyBg();
+})();
+
+/* ---------- wallpapers ---------- */
+function makeUrls(){["lock","home"].forEach(k=>{if(wpU[k])URL.revokeObjectURL(wpU[k]);wpU[k]=wp[k]?URL.createObjectURL(wp[k]):""})}
+function applyBg(){
+  const u=wpU[locked?"lock":"home"],w=$("wp");
+  w.style.backgroundImage=u?`url("${u}")`:"";w.classList.toggle("on",!!u);
+  [["tLock","lock"],["tHome","home"]].forEach(([id,k])=>{
+    $(id).style.backgroundImage=wpU[k]?`url("${wpU[k]}")`:"";$(id).classList.toggle("has",!!wpU[k]);});
+}
+$("seg").onclick=e=>{const b=e.target.closest("button");if(!b)return;target=b.dataset.t;
+  [...$("seg").children].forEach(x=>x.classList.toggle("on",x===b))};
+$("wpPick").onclick=()=>{picking=true;$("wpFile").click()};
+const keysFor=()=>target==="both"?["lock","home"]:[target];
+$("wpFile").onchange=async e=>{
+  const f=e.target.files[0];e.target.value="";picking=false;
+  if(!f||!f.type.startsWith("image/"))return;
+  try{for(const k of keysFor()){wp[k]=f;if(db)await sset("wp"+k,f);}
+    makeUrls();applyBg();toast("Wallpaper updated");}
+  catch(err){toast("Could not save wallpaper")}
+};
+$("wpReset").onclick=async()=>{
+  try{for(const k of keysFor()){wp[k]=null;if(db)await sdel("wp"+k);}
+    makeUrls();applyBg();toast("Wallpaper reset");}catch(e){}
+};
+
+/* ---------- lock screen ---------- */
+const L={2:"ABC",3:"DEF",4:"GHI",5:"JKL",6:"MNO",7:"PQRS",8:"TUV",9:"WXYZ"};
+[1,2,3,4,5,6,7,8,9,0].forEach(n=>{const b=document.createElement("button");
+  b.className="k"+(n===0?" z":"");b.innerHTML=n+"<small>"+(L[n]||"")+"</small>";
+  b.onclick=()=>press(String(n));$("pad").appendChild(b)});
+const dl=document.createElement("button");dl.className="del";dl.id="dl";dl.textContent="Delete";dl.style.visibility="hidden";
+dl.onclick=()=>press("⌫");$("pad").appendChild(dl);
+function drawDots(){[...$("dots").children].forEach((d,i)=>d.classList.toggle("on",i<entered.length));
+  dl.style.visibility=entered.length?"visible":"hidden"}
+function press(k){
+  if(!locked||busy)return;
+  if(k==="⌫")entered=entered.slice(0,-1);
+  else if(entered.length<6)entered+=k;
+  drawDots();if(entered.length===6)check();
+}
+async function check(){
+  busy=true;await ready;const h=await hash(entered);
+  setTimeout(()=>{
+    if(h===passHash){busy=false;unlock()}
+    else{const d=$("dots");d.classList.remove("shake");void d.offsetWidth;d.classList.add("shake");
+      $("ttl").textContent="Wrong Passcode. Try Again";
+      entered="";drawDots();busy=false;
+      setTimeout(()=>{if(locked)$("ttl").textContent="Enter Passcode"},1800);}
+  },150);
+}
+document.addEventListener("keydown",e=>{
+  if(!$("set").classList.contains("hidden")){if(e.key==="Escape")closeSet();return}
+  if(!$("pv").classList.contains("hidden")){
+    if(e.key==="Escape")closePv();
+    if(e.key==="ArrowLeft")step(-1);
+    if(e.key==="ArrowRight")step(1);return;}
+  if(/^\d$/.test(e.key))press(e.key);else if(e.key==="Backspace")press("⌫");
+});
+async function unlock(){
+  entered="";drawDots();locked=false;$("ttl").textContent="Enter Passcode";
+  $("lock").classList.add("hidden");$("vault").classList.remove("hidden");applyBg();
+  try{if(db)photos=await req(tx("p","readonly").getAll())}catch(e){toast("Storage is blocked in this browser")}
+  render();
+}
+function lock(){
+  closePv();closeSet();locked=true;applyBg();
+  $("vault").classList.add("hidden");$("lock").classList.remove("hidden");
+  $("grid").innerHTML="";urls.forEach(u=>URL.revokeObjectURL(u));urls.clear();
+}
+$("lockBtn").onclick=lock;
+document.addEventListener("visibilitychange",()=>{if(document.hidden&&!locked&&!picking)lock()});
+window.addEventListener("focus",()=>setTimeout(()=>{picking=false},1200));
+
+/* ---------- gallery ---------- */
+function render(){
+  const g=$("grid");g.innerHTML="";
+  photos.sort((a,b)=>b.t-a.t).forEach((p,i)=>{
+    const b=document.createElement("button");b.className="tile";
+    const im=new Image();im.src=urlOf(p);im.alt="";im.loading="lazy";b.appendChild(im);
+    b.onclick=()=>openPv(i);g.appendChild(b);});
+  $("count").textContent=photos.length+(photos.length===1?" photo":" photos");
+  $("empty").classList.toggle("hidden",photos.length>0);
+}
+$("add").onclick=$("emptyAdd").onclick=()=>{picking=true;$("file").click()};
+$("file").onchange=async e=>{
+  picking=false;
+  const files=[...e.target.files].filter(f=>f.type.startsWith("image/"));
+  e.target.value="";if(!files.length)return;
+  try{for(const f of files){
+      const rec={name:f.name,type:f.type,blob:f,t:Date.now()};
+      rec.id=await req(tx("p","readwrite").add(rec));photos.push(rec);}
+    render();toast(files.length+(files.length>1?" photos":" photo")+" saved");}
+  catch(err){toast("Could not save. Storage may be full.")}
+};
+
+/* ---------- full preview ---------- */
+function openPv(i){cur=i;showPv();$("pv").classList.remove("hidden")}
+function showPv(){const p=photos[cur];if(!p)return closePv();
+  $("pimg").src=urlOf(p);$("pcnt").textContent=(cur+1)+" / "+photos.length}
+function step(d){if(photos.length<2)return;cur=(cur+d+photos.length)%photos.length;showPv()}
+function closePv(){$("pv").classList.add("hidden");$("pimg").removeAttribute("src")}
+$("close").onclick=closePv;$("prev").onclick=()=>step(-1);$("next").onclick=()=>step(1);
+$("del").onclick=async()=>{
+  const p=photos[cur];if(!p||!confirm("Delete this photo from the vault?"))return;
+  await req(tx("p","readwrite").delete(p.id));URL.revokeObjectURL(urls.get(p.id));urls.delete(p.id);
+  photos.splice(cur,1);render();
+  if(!photos.length)closePv();else{cur=Math.min(cur,photos.length-1);showPv()}
+};
+let sx=0;
+$("pv").addEventListener("touchstart",e=>{sx=e.touches[0].clientX},{passive:true});
+$("pv").addEventListener("touchend",e=>{const d=e.changedTouches[0].clientX-sx;if(Math.abs(d)>50)step(d>0?-1:1)});
+
+/* ---------- settings: password ---------- */
+function openSet(){$("smsg").textContent="";$("set").classList.remove("hidden");applyBg()}
+function closeSet(){$("set").classList.add("hidden");["pc","pn","pr"].forEach(i=>$(i).value="")}
+$("setBtn").onclick=openSet;$("sClose").onclick=closeSet;
+$("set").onclick=e=>{if(e.target.id==="set")closeSet()};
+["pc","pn","pr"].forEach(i=>$(i).oninput=e=>{e.target.value=e.target.value.replace(/\D/g,"")});
+function smsg(t,ok){const m=$("smsg");m.textContent=t;m.classList.toggle("ok",!!ok)}
+$("pSave").onclick=async()=>{
+  const c=$("pc").value,n=$("pn").value,r=$("pr").value;
+  if(await hash(c)!==passHash)return smsg("Current password is wrong.");
+  if(!/^\d{6}$/.test(n))return smsg("New password must be exactly 6 digits.");
+  if(n!==r)return smsg("New passwords don't match.");
+  if(n===c)return smsg("Choose a different password.");
+  try{const h=await hash(n);if(db)await sset("pass",h);passHash=h;
+    ["pc","pn","pr"].forEach(i=>$(i).value="");smsg("Password changed.",true);toast("Password changed");}
+  catch(e){smsg("Could not save the password.")}
+};
+
+function toast(t){
+  const d=document.createElement("div");d.className="toast glass";d.textContent=t;document.body.appendChild(d);
+  setTimeout(()=>d.remove(),2200);
+}
+</script>
+</body>
+</html>
