@@ -1,318 +1,508 @@
-<!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<!doctype html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Glass Vault</title>
-<style>
-:root{--bg:#07080f;--txt:#f3f5ff;--mut:#a3abcc;--glass:rgba(255,255,255,.08);--bd:rgba(255,255,255,.18);--hi:rgba(255,255,255,.35);--bad:#ff6b8b;
-color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;min-height:100%;background:var(--bg);color:var(--txt);font-family:"Inter","SF Pro Display",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-body{overflow-x:hidden}
-.orb{position:fixed;border-radius:50%;filter:blur(70px);opacity:.5;z-index:0;pointer-events:none}
-.o1{width:60vmax;height:60vmax;background:#5b45ff;top:-20vmax;left:-15vmax}
-.o2{width:50vmax;height:50vmax;background:#12c7b0;bottom:-18vmax;right:-14vmax}
-.o3{width:30vmax;height:30vmax;background:#ff5fa2;top:40%;left:55%;opacity:.3}
-#wp{position:fixed;inset:0;z-index:0;background:#000 center/cover no-repeat;display:none}
-#wp.on{display:block}
-#wp::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.28)}
-.glass{background:var(--glass);border:1px solid var(--bd);box-shadow:inset 0 1px 0 var(--hi),0 20px 50px rgba(0,0,0,.35);backdrop-filter:blur(26px) saturate(160%);-webkit-backdrop-filter:blur(26px) saturate(160%)}
-button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
-.screen{position:relative;z-index:1;min-height:100vh;min-height:100dvh}
-.hidden{display:none!important}
-
-/* lock screen (passcode style) */
-#lock{display:flex;flex-direction:column;align-items:center;padding:11vh 20px 24px;background:rgba(0,0,0,.35)}
-.ttl{font-size:20px;font-weight:500;text-align:center;line-height:1.25;min-height:50px;max-width:260px;padding-top:2px}
-.dots{display:flex;gap:26px;margin:20px 0 46px}
-.dots i{width:14px;height:14px;border-radius:50%;border:1.5px solid #fff;transition:background .12s}
-.dots i.on{background:#fff}
-.pad{display:grid;grid-template-columns:repeat(3,78px);gap:16px 26px}
-.k{width:78px;height:78px;border-radius:50%;background:rgba(72,72,74,.6);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:34px;font-weight:300;line-height:1;transition:background .1s}
-.k small{font-size:10px;font-weight:600;letter-spacing:2.5px;margin-top:4px;height:11px;padding-left:2.5px}
-.k:active{background:rgba(255,255,255,.4)}
-.k.z{grid-column:2}
-.del{grid-column:3;align-self:center;font-size:18px;height:78px}
-.shake{animation:sh .38s}
-@keyframes sh{20%,60%{transform:translateX(-10px)}40%,80%{transform:translateX(10px)}}
-
-/* vault */
-#vault{padding:0 16px 110px;max-width:1100px;margin:0 auto}
-header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;margin:12px 0 18px;padding:12px 14px 12px 20px;border-radius:24px;display:flex;align-items:center;justify-content:space-between;gap:10px}
-header h2{margin:0;font-size:19px;font-weight:650}
-header small{display:block;color:var(--mut);font-size:12.5px;margin-top:2px}
-.hb{display:flex;gap:8px}
-.btn{height:42px;padding:0 18px;border-radius:21px;background:var(--glass);border:1px solid var(--bd);box-shadow:inset 0 1px 0 var(--hi);font-weight:550;font-size:14.5px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
-.btn:active{transform:scale(.96)}
-.pri{background:linear-gradient(145deg,rgba(139,124,255,.7),rgba(54,214,195,.55))}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}
-.tile{position:relative;aspect-ratio:1;border-radius:20px;overflow:hidden;padding:0;background:var(--glass);border:1px solid var(--bd);box-shadow:0 10px 28px rgba(0,0,0,.35)}
-.tile img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
-.tile:hover img{transform:scale(1.06)}
-.empty{margin:12vh auto 0;max-width:320px;padding:34px 24px;border-radius:30px;text-align:center}
-.empty b{font-size:18px}.empty p{color:var(--mut);margin:8px 0 18px;font-size:14px}
-.fab{position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:6;width:62px;height:62px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,rgba(139,124,255,.75),rgba(54,214,195,.6));border:1px solid var(--hi);box-shadow:inset 0 1px 0 var(--hi),0 14px 34px rgba(91,69,255,.5)}
-.fab svg{width:28px;height:28px}
-.fab:active{transform:scale(.92)}
-
-/* preview */
-#pv{position:fixed;inset:0;z-index:20;background:rgba(4,5,10,.92);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);display:flex;align-items:center;justify-content:center;touch-action:pan-y}
-#pv img{width:100%;height:100%;object-fit:contain;user-select:none;-webkit-user-drag:none}
-.top,.nav{position:absolute;z-index:2}
-.top{top:calc(12px + env(safe-area-inset-top,0px));left:12px;right:12px;display:flex;justify-content:space-between;align-items:center}
-.round{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:var(--glass);border:1px solid var(--bd);box-shadow:inset 0 1px 0 var(--hi);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);font-size:20px}
-.round svg{width:22px;height:22px}
-.cnt{padding:10px 16px;border-radius:22px;font-size:14px}
-.nav{top:50%;transform:translateY(-50%)}
-#prev{left:12px}#next{right:12px}
-
-/* settings */
-#set{position:fixed;inset:0;z-index:25;background:rgba(3,4,10,.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:flex-end;justify-content:center}
-.sheet{width:100%;max-width:480px;max-height:90dvh;overflow-y:auto;border-radius:30px 30px 0 0;padding:20px 20px calc(24px + env(safe-area-inset-bottom,0px));background:rgba(28,30,48,.72)}
-@media(min-width:600px){#set{align-items:center}.sheet{border-radius:30px}}
-.sh{display:flex;justify-content:space-between;align-items:center;font-size:20px;font-weight:650}
-.sheet h3{margin:22px 0 12px;font-size:15px;font-weight:600;color:var(--mut)}
-.ths{display:flex;gap:12px}
-.ths>div{flex:1;text-align:center;font-size:12.5px;color:var(--mut)}
-.th{aspect-ratio:9/14;max-height:170px;width:100%;margin:0 auto 6px;border-radius:18px;border:1px solid var(--bd);background:rgba(255,255,255,.06) center/cover no-repeat;display:grid;place-items:center;font-size:12px}
-.th.has span{display:none}
-.seg{display:flex;padding:4px;border-radius:16px;background:rgba(255,255,255,.07);border:1px solid var(--bd);margin:14px 0}
-.seg button{flex:1;height:36px;border-radius:12px;font-size:13.5px;color:var(--mut)}
-.seg button.on{background:rgba(255,255,255,.2);color:#fff;font-weight:600}
-.row{display:flex;gap:10px}.row .btn{flex:1}
-.sheet input[type=password]{width:100%;height:46px;margin-bottom:10px;border-radius:14px;background:rgba(255,255,255,.07);border:1px solid var(--bd);color:#fff;font:inherit;padding:0 14px;outline:0}
-.sheet input:focus{border-color:#8b7cff}
-.sheet .pri{width:100%}
-.smsg{min-height:20px;margin-top:10px;font-size:13px;text-align:center;color:var(--bad)}
-.smsg.ok{color:#5eead4}
-.toast{position:fixed;left:50%;bottom:calc(100px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:40;padding:11px 20px;border-radius:22px;font-size:14px;white-space:nowrap}
-@media(max-width:600px){.nav{display:none}.grid{grid-template-columns:repeat(3,1fr);gap:8px}.tile{border-radius:14px}}
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-:root:not([data-theme="light"]){--bg:#07080f}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#07080f}}
-:root[data-theme="dark"]{--bg:#07080f}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#6C7A89">
+  <meta name="description" content="Luvv Archive — a quiet corner for words that stay. Explore, search, and save poetry.">
+  <title>Luvv Archive — Words that stay</title>
+  <style>
+    :root {
+      --slate: #6C7A89;
+      --slate-dark: #4F5D6B;
+      --slate-light: #E8EDF1;
+      --white: #FFFFFF;
+      --ink: #26313B;
+      --muted: #7B858E;
+      --line: #E3E7EA;
+      --paper: #F7F8F9;
+      --shadow: 0 14px 36px rgba(43, 57, 69, .09);
+      --radius: 20px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; color: var(--ink); background: var(--white); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid rgba(108,122,137,.35); outline-offset: 2px; }
+    .topbar { height: 72px; padding: 0 clamp(18px, 5vw, 72px); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); background: rgba(255,255,255,.94); position: sticky; top: 0; z-index: 20; backdrop-filter: blur(14px); }
+    .brand { display: flex; align-items: center; gap: 12px; color: var(--ink); text-decoration: none; }
+    .brand-mark { width: 38px; height: 38px; border-radius: 13px; display: grid; place-items: center; background: var(--slate); color: white; font: 700 21px Georgia, serif; box-shadow: 0 5px 12px #6c7a8933; }
+    .brand-name { font: 700 21px Georgia, "Times New Roman", serif; letter-spacing: -.4px; }
+    .brand-sub { display: block; color: var(--muted); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+    .nav { display: flex; align-items: center; gap: 8px; }
+    .nav-btn, .icon-btn { border: 0; background: transparent; color: #58636d; border-radius: 12px; padding: 10px 13px; }
+    .nav-btn { font-size: 13px; font-weight: 650; }
+    .nav-btn.active, .nav-btn:hover { color: var(--slate-dark); background: var(--slate-light); }
+    .nav-btn .count { font-size: 11px; background: #dce2e7; border-radius: 99px; padding: 2px 6px; margin-left: 4px; }
+    .menu-toggle { display: none; border: 1px solid var(--line); background: white; border-radius: 11px; padding: 9px 11px; color: var(--ink); }
+    .hero { min-height: 345px; background: var(--slate); color: white; padding: 58px 24px 56px; position: relative; overflow: hidden; }
+    .hero:before, .hero:after { content: ""; position: absolute; border: 1px solid rgba(255,255,255,.13); border-radius: 50%; pointer-events: none; }
+    .hero:before { width: 450px; height: 450px; right: -90px; top: -210px; }
+    .hero:after { width: 320px; height: 320px; right: -25px; top: -145px; }
+    .hero-inner { max-width: 980px; margin: auto; position: relative; z-index: 1; }
+    .eyebrow { text-transform: uppercase; letter-spacing: 3px; font-size: 10px; font-weight: 750; opacity: .78; }
+    h1 { font: 500 clamp(40px, 7vw, 66px)/1.03 Georgia, "Times New Roman", serif; letter-spacing: -2px; margin: 18px 0 15px; max-width: 700px; }
+    .hero p { max-width: 520px; line-height: 1.7; color: #eef1f4; margin: 0; font-size: 15px; }
+    .hero-line { margin-top: 25px; display: flex; gap: 10px; align-items: center; font-size: 11px; letter-spacing: 1.3px; text-transform: uppercase; opacity: .9; }
+    .hero-line:before { content: ""; height: 1px; width: 34px; background: white; }
+    main { max-width: 1120px; padding: 0 24px 70px; margin: auto; }
+    .toolbar-wrap { margin-top: -27px; position: relative; z-index: 2; }
+    .toolbar { background: white; border: 1px solid #e7eaed; box-shadow: var(--shadow); border-radius: 17px; padding: 13px; display: grid; grid-template-columns: minmax(190px, 1fr) 180px 165px; gap: 10px; }
+    .search-box { display: flex; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 11px; padding: 0 13px; min-width: 0; }
+    .search-box svg { width: 18px; height: 18px; color: #7b858e; flex: 0 0 auto; }
+    .search-box input { border: 0; outline: 0; width: 100%; min-width: 0; padding: 12px 0; color: var(--ink); background: transparent; font-size: 13px; }
+    .control { border: 1px solid var(--line); border-radius: 11px; padding: 0 12px; color: #58636d; background: white; font-size: 12px; min-width: 0; }
+    .section-head { display: flex; align-items: end; justify-content: space-between; gap: 15px; margin: 48px 0 20px; }
+    .section-kicker { color: var(--slate); font-size: 10px; text-transform: uppercase; letter-spacing: 2.6px; font-weight: 800; }
+    h2 { font: 500 34px/1.2 Georgia, "Times New Roman", serif; letter-spacing: -.7px; margin: 7px 0 0; }
+    .result-count { font-size: 12px; color: var(--muted); }
+    .poem-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 17px; }
+    .poem-card { border: 1px solid var(--line); border-radius: var(--radius); background: white; padding: 22px 21px 18px; min-height: 250px; display: flex; flex-direction: column; transition: transform .2s, box-shadow .2s, border-color .2s; }
+    .poem-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: #cbd3da; }
+    .card-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .tag { font-size: 9px; text-transform: uppercase; letter-spacing: 1.3px; color: var(--slate-dark); background: var(--slate-light); padding: 7px 9px; border-radius: 7px; font-weight: 800; }
+    .bookmark { border: 0; background: transparent; padding: 5px; color: #87919a; border-radius: 8px; display: grid; place-items: center; }
+    .bookmark svg { width: 19px; height: 19px; }
+    .bookmark.saved { color: var(--slate-dark); background: var(--slate-light); }
+    .poem-title { font: 600 22px/1.25 Georgia, "Times New Roman", serif; margin: 19px 0 10px; }
+    .poem-excerpt { white-space: pre-line; color: #5f6972; font: 15px/1.85 Georgia, "Times New Roman", serif; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+    .card-bottom { margin-top: auto; padding-top: 18px; display: flex; justify-content: space-between; align-items: center; gap: 8px; border-top: 1px solid #f0f2f3; }
+    .card-meta { color: #939ba2; font-size: 10px; }
+    .text-btn { border: 0; background: transparent; color: var(--slate-dark); font-weight: 750; font-size: 11px; padding: 7px 0 7px 8px; }
+    .empty { grid-column: 1/-1; border: 1px dashed #ccd3d9; border-radius: var(--radius); padding: 45px 20px; text-align: center; color: var(--muted); }
+    .empty strong { display: block; font: 24px Georgia,serif; color: var(--ink); margin-bottom: 8px; }
+    .about-strip { margin-top: 55px; background: var(--paper); border: 1px solid var(--line); border-radius: 22px; padding: 28px; display: flex; justify-content: space-between; align-items: center; gap: 25px; }
+    .about-strip h3 { font: 500 25px Georgia,serif; margin: 0 0 8px; }
+    .about-strip p { color: var(--muted); font-size: 12px; line-height: 1.7; margin: 0; max-width: 560px; }
+    .seal { border: 1px solid #d5dce1; border-radius: 50%; width: 76px; height: 76px; display: grid; place-items: center; flex: 0 0 auto; color: var(--slate); font: 28px Georgia,serif; }
+    .social-footer { border-top: 1px solid var(--line); padding: 34px 20px 22px; text-align: center; background: #fbfcfc; }
+    .social-title { font: 500 25px Georgia, "Times New Roman", serif; color: var(--ink); margin: 0 0 8px; }
+    .social-copy { color: var(--muted); font-size: 12px; margin: 0 0 19px; }
+    .social-links { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .social-link { display: inline-flex; align-items: center; justify-content: center; gap: 9px; border: 1px solid #dce2e7; background: white; color: var(--slate-dark); border-radius: 12px; padding: 11px 16px; font-size: 12px; font-weight: 750; text-decoration: none; transition: background .2s, transform .2s, border-color .2s; }
+    .social-link:hover { background: var(--slate-light); border-color: #c4ced6; transform: translateY(-2px); }
+    .social-link svg { width: 18px; height: 18px; }
+    footer { border-top: 1px solid var(--line); padding: 18px 20px; text-align: center; color: #9aa1a7; font-size: 10px; letter-spacing: 1px; }
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(29,38,46,.55); display: none; align-items: center; justify-content: center; padding: 18px; z-index: 50; }
+    .modal-backdrop.open { display: flex; }
+    .modal { background: white; width: min(620px, 100%); max-height: 90vh; overflow: auto; border-radius: 22px; box-shadow: 0 24px 80px #17212b44; padding: 27px; }
+    .modal-head { display: flex; justify-content: space-between; align-items: start; gap: 15px; }
+    .modal-head h2 { font-size: 30px; margin: 0; }
+    .close-btn { border: 1px solid var(--line); background: white; border-radius: 10px; width: 35px; height: 35px; color: var(--muted); font-size: 20px; }
+    .detail-meta { color: var(--muted); font-size: 11px; margin-top: 10px; }
+    .detail-text { white-space: pre-wrap; overflow-wrap: anywhere; font: 18px/2 Georgia,serif; color: #3d4851; padding: 25px 0; }
+    .modal-actions { display: flex; flex-wrap: wrap; gap: 9px; }
+    .btn { border: 1px solid #d7dde2; border-radius: 10px; padding: 10px 14px; background: white; color: var(--slate-dark); font-weight: 700; font-size: 12px; }
+    .btn.primary { background: var(--slate); color: white; border-color: var(--slate); }
+    .btn.danger { color: #9a4141; border-color: #e8caca; }
+    .admin-wrap { max-width: 650px; margin: 25px auto 0; }
+    .admin-card { background: white; border: 1px solid var(--line); border-radius: 20px; padding: 23px; box-shadow: var(--shadow); }
+    .admin-card h3 { font: 26px Georgia,serif; margin: 0 0 7px; }
+    .admin-card > p { color: var(--muted); font-size: 12px; line-height: 1.6; margin: 0 0 20px; }
+    .field { display: grid; gap: 7px; margin-bottom: 14px; }
+    .field label { color: #5e6972; font-size: 11px; font-weight: 750; }
+    .field input, .field select, .field textarea { border: 1px solid var(--line); border-radius: 10px; padding: 12px; background: white; color: var(--ink); width: 100%; font-size: 13px; }
+    .field textarea { min-height: 150px; resize: vertical; line-height: 1.7; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .admin-list { margin-top: 22px; border-top: 1px solid var(--line); padding-top: 18px; }
+    .admin-item { display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid #eff1f3; align-items: center; }
+    .admin-item strong { font: 17px Georgia,serif; }
+    .admin-item small { display: block; color: var(--muted); font-size: 10px; margin-top: 4px; }
+    .admin-actions { display: flex; gap: 5px; }
+    .admin-actions .btn { padding: 7px 9px; }
+    .notice { padding: 12px 14px; background: var(--slate-light); color: var(--slate-dark); border-radius: 10px; font-size: 12px; line-height: 1.6; margin: 12px 0; }
+    .toast { position: fixed; bottom: 22px; left: 50%; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; z-index: 100; background: #29343e; color: white; border-radius: 12px; padding: 12px 17px; box-shadow: var(--shadow); font-size: 12px; transition: .25s; max-width: calc(100% - 30px); }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .hidden { display: none !important; }
+    .loading { color: var(--muted); font-size: 13px; padding: 20px 0; }
+    @media (max-width: 800px) {
+      .poem-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .toolbar { grid-template-columns: 1fr 1fr; }
+      .search-box { grid-column: 1/-1; }
+    }
+    @media (max-width: 560px) {
+      .topbar { height: 64px; padding: 0 16px; }
+      .brand-name { font-size: 19px; }
+      .brand-mark { width: 34px; height: 34px; }
+      .menu-toggle { display: block; }
+      .nav { display: none; position: absolute; top: 63px; left: 10px; right: 10px; padding: 10px; background: white; border: 1px solid var(--line); box-shadow: var(--shadow); border-radius: 14px; flex-direction: column; align-items: stretch; }
+      .nav.open { display: flex; }
+      .nav-btn { text-align: left; padding: 12px; }
+      .hero { min-height: 320px; padding: 48px 22px; }
+      h1 { letter-spacing: -1.3px; }
+      main { padding: 0 15px 45px; }
+      .toolbar { grid-template-columns: 1fr 1fr; padding: 10px; gap: 8px; }
+      .control { min-height: 43px; }
+      .section-head { margin-top: 38px; align-items: start; flex-direction: column; gap: 7px; }
+      h2 { font-size: 30px; }
+      .poem-grid { grid-template-columns: 1fr; gap: 12px; }
+      .poem-card { min-height: 225px; }
+      .about-strip { padding: 22px; margin-top: 38px; }
+      .seal { width: 58px; height: 58px; font-size: 22px; }
+      .modal { padding: 21px; }
+      .form-row { grid-template-columns: 1fr; gap: 0; }
+    }
+  </style>
 </head>
 <body>
-<div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div>
-<div id="wp"></div>
-
-<main id="lock" class="screen">
-  <div class="ttl" id="ttl">Enter Passcode</div>
-  <div class="dots" id="dots"><i></i><i></i><i></i><i></i><i></i><i></i></div>
-  <div class="pad" id="pad"></div>
-</main>
-
-<main id="vault" class="screen hidden">
-  <header class="glass">
-    <div><h2>My Vault</h2><small id="count">0 photos</small></div>
-    <div class="hb"><button class="btn" id="setBtn">Settings</button><button class="btn" id="lockBtn">Lock</button></div>
+  <header class="topbar">
+    <a class="brand" href="#" id="homeBrand" aria-label="Luvv Archive home">
+      <span class="brand-mark">L</span>
+      <span><span class="brand-name">Luvv Archive</span><span class="brand-sub">Words that stay</span></span>
+    </a>
+    <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">☰</button>
+    <nav class="nav" id="mainNav" aria-label="Main navigation">
+      <button class="nav-btn active" data-view="home">Discover</button>
+      <button class="nav-btn" data-view="saved">Saved <span class="count" id="savedCount">0</span></button>
+      <button class="nav-btn" data-view="admin">Admin</button>
+    </nav>
   </header>
-  <div id="empty" class="empty glass hidden">
-    <b>No photos yet</b>
-    <p>Add photos and they stay hidden here, saved on this device.</p>
-    <button class="btn" id="emptyAdd">Add photos</button>
-  </div>
-  <div class="grid" id="grid"></div>
-  <button class="fab" id="add" aria-label="Add photos"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
-  <input type="file" id="file" accept="image/*" multiple hidden>
-</main>
 
-<div id="pv" class="hidden">
-  <div class="top">
-    <button class="round" id="close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-    <span class="cnt glass" id="pcnt"></span>
-    <button class="round" id="del" aria-label="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="#ff8fa8" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg></button>
-  </div>
-  <button class="round nav" id="prev" aria-label="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
-  <img id="pimg" alt="">
-  <button class="round nav" id="next" aria-label="Next"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
-</div>
-
-<div id="set" class="hidden">
-  <div class="sheet glass">
-    <div class="sh"><span>Settings</span><button class="round" id="sClose" aria-label="Close">×</button></div>
-    <h3>Wallpaper</h3>
-    <div class="ths">
-      <div><div class="th" id="tLock"><span>Default</span></div>Lock screen</div>
-      <div><div class="th" id="tHome"><span>Default</span></div>Home screen</div>
+  <section class="hero" id="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">A personal poetry collection</div>
+      <h1>Some words<br>never leave us.</h1>
+      <p>A quiet corner for feelings that are difficult to say out loud. Read slowly, save what stays with you.</p>
+      <div class="hero-line">Collected with feeling</div>
     </div>
-    <div class="seg" id="seg">
-      <button data-t="both" class="on">Both</button><button data-t="lock">Lock screen</button><button data-t="home">Home screen</button>
+  </section>
+
+  <main>
+    <section id="libraryView">
+      <div class="toolbar-wrap">
+        <div class="toolbar">
+          <label class="search-box" aria-label="Search poetry">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 4.5 4.5"></path></svg>
+            <input id="searchInput" type="search" placeholder="Search title, words or poetry..." autocomplete="off">
+          </label>
+          <select class="control" id="categoryFilter" aria-label="Filter by category">
+            <option value="all">All categories</option>
+            <option>Love</option><option>Sad</option><option>One-sided Love</option><option>Heartbreak</option><option>Life</option><option>Hope</option><option>Other</option>
+          </select>
+          <select class="control" id="languageFilter" aria-label="Filter by language">
+            <option value="all">All languages</option>
+            <option>Hindi</option><option>Urdu</option><option>Hinglish</option><option>English</option>
+          </select>
+          <select class="control" id="sortFilter" aria-label="Sort poetry">
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+            <option value="az">Title A–Z</option>
+          </select>
+          <button class="control" id="clearFilters" type="button">Clear filters</button>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <div><div class="section-kicker" id="sectionKicker">The collection</div><h2 id="sectionTitle">Words to return to</h2></div>
+        <div class="result-count" id="resultCount">Loading collection…</div>
+      </div>
+      <div class="poem-grid" id="poemGrid"><div class="empty"><strong>Opening the archive…</strong>Please wait a moment.</div></div>
+
+      <section class="about-strip">
+        <div><h3>Made for the lines that find you.</h3><p>Luvv Archive is a personal collection of poetry, quiet thoughts and unfinished feelings. Search the archive, keep your favourite lines close, and return whenever you need them.</p></div>
+        <div class="seal" aria-hidden="true">L.</div>
+      </section>
+    </section>
+
+    <section class="admin-wrap hidden" id="adminView">
+      <div class="section-head"><div><div class="section-kicker">Private workspace</div><h2>Archive desk</h2></div></div>
+      <div class="admin-card" id="loginCard">
+        <h3>Admin sign in</h3>
+        <p>Sign in with the Firebase email and password you created for your admin account.</p>
+        <div class="notice">Only the configured admin account can publish poetry. Never share your password or place it in this file.</div>
+        <form id="loginForm">
+          <div class="field"><label for="adminEmail">Email address</label><input id="adminEmail" type="email" autocomplete="username" required placeholder="you@example.com"></div>
+          <div class="field"><label for="adminPassword">Password</label><input id="adminPassword" type="password" autocomplete="current-password" required placeholder="Your password"></div>
+          <button class="btn primary" type="submit" id="loginButton">Sign in</button>
+          <div id="loginMessage" class="notice hidden" role="status"></div>
+        </form>
+      </div>
+
+      <div class="admin-card hidden" id="editorCard">
+        <h3 id="editorHeading">Add a new poem</h3>
+        <p id="adminIdentity">Signed in as admin.</p>
+        <form id="poemForm">
+          <input id="editId" type="hidden">
+          <div class="field"><label for="poemTitle">Title</label><input id="poemTitle" maxlength="100" required placeholder="Give this poem a title"></div>
+          <div class="field"><label for="poemText">Poetry / text</label><textarea id="poemText" maxlength="12000" required placeholder="Write your lines here…"></textarea></div>
+          <div class="form-row">
+            <div class="field"><label for="poemCategory">Category</label><select id="poemCategory"><option>Love</option><option>Sad</option><option>One-sided Love</option><option>Heartbreak</option><option>Life</option><option>Hope</option><option>Other</option></select></div>
+            <div class="field"><label for="poemLanguage">Language</label><select id="poemLanguage"><option>Hindi</option><option>Urdu</option><option>Hinglish</option><option>English</option></select></div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label for="poemAuthor">Poet / credit (optional)</label><input id="poemAuthor" maxlength="80" placeholder="e.g. Jaun Elia"></div>
+            <div class="field"><label for="poemDate">Date (optional)</label><input id="poemDate" type="date"></div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn primary" type="submit" id="publishButton">Publish poem</button>
+            <button class="btn hidden" type="button" id="cancelEdit">Cancel edit</button>
+            <button class="btn" type="button" id="signOutButton">Sign out</button>
+          </div>
+          <div id="editorMessage" class="notice hidden" role="status"></div>
+        </form>
+        <div class="admin-list"><h3 style="font-size:22px">Published poems</h3><div id="adminPoemList"></div></div>
+      </div>
+    </section>
+  </main>
+
+  <section class="social-footer" aria-label="Follow Luvv Archive">
+    <h2 class="social-title">Stay connected</h2>
+    <p class="social-copy">More words, thoughts and poetry — find me here.</p>
+    <div class="social-links">
+      <a class="social-link" href="https://instagram.com/whynot_.luv?rpxt=MXJpbXJiZGg3azBocQ%3D%3D" target="_blank" rel="noopener noreferrer" aria-label="Follow on Instagram">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".8" fill="currentColor" stroke="none"/></svg>
+        Follow on Instagram
+      </a>
+      <a class="social-link" href="https://youtube.com/@luvv0309?si=K1uo6Kx3wgMxchce" target="_blank" rel="noopener noreferrer" aria-label="Visit YouTube channel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="4"/><path d="m10 9 5 3-5 3z" fill="currentColor" stroke="none"/></svg>
+        YouTube channel
+      </a>
     </div>
-    <div class="row"><button class="btn pri" id="wpPick">Choose photo</button><button class="btn" id="wpReset">Reset</button></div>
-    <input type="file" id="wpFile" accept="image/*" hidden>
-    <h3>Change password</h3>
-    <input id="pc" type="password" inputmode="numeric" maxlength="6" placeholder="Current password" autocomplete="off">
-    <input id="pn" type="password" inputmode="numeric" maxlength="6" placeholder="New password (6 digits)" autocomplete="off">
-    <input id="pr" type="password" inputmode="numeric" maxlength="6" placeholder="Confirm new password" autocomplete="off">
-    <button class="btn pri" id="pSave">Save password</button>
-    <div class="smsg" id="smsg"></div>
+  </section>
+  <footer>© <span id="year"></span> LUVV ARCHIVE · A HOME FOR WORDS THAT STAY</footer>
+
+  <div class="modal-backdrop" id="detailBackdrop" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+    <article class="modal">
+      <div class="modal-head"><div><h2 id="detailTitle">Poem title</h2><div class="detail-meta" id="detailMeta"></div></div><button class="close-btn" id="closeDetail" aria-label="Close">×</button></div>
+      <div class="detail-text" id="detailText"></div>
+      <div class="modal-actions"><button class="btn primary" id="detailSave">Save poem</button><button class="btn" id="copyPoem">Copy text</button><button class="btn" id="sharePoem">Share</button></div>
+    </article>
   </div>
-</div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script>
-const PASS="030907";
-const $=id=>document.getElementById(id);
-let entered="",photos=[],urls=new Map(),cur=0,db=null,passHash="",wp={lock:null,home:null},wpU={},locked=true,picking=false,target="both",busy=false;
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+    import { getDatabase, ref, onValue, push, set, update, remove } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js";
 
-/* ---------- storage ---------- */
-async function hash(s){try{const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode("gv:"+s));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}catch(e){return"gv:"+s}}
-function openDB(){return new Promise((res,rej)=>{try{
-  const r=indexedDB.open("glass-vault",2);
-  r.onupgradeneeded=()=>{const d=r.result;
-    if(!d.objectStoreNames.contains("p"))d.createObjectStore("p",{keyPath:"id",autoIncrement:true});
-    if(!d.objectStoreNames.contains("s"))d.createObjectStore("s");};
-  r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);}catch(e){rej(e)}});}
-const tx=(s,m)=>db.transaction(s,m).objectStore(s);
-const req=r=>new Promise((res,rej)=>{r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
-const sget=k=>req(tx("s","readonly").get(k));
-const sset=(k,v)=>req(tx("s","readwrite").put(v,k));
-const sdel=k=>req(tx("s","readwrite").delete(k));
-const urlOf=p=>{if(!urls.has(p.id))urls.set(p.id,URL.createObjectURL(p.blob));return urls.get(p.id)};
+    // Firebase web configuration is public client configuration, not an admin secret.
+    const firebaseConfig = {
+      apiKey: "AIzaSyAOswMhFdFfPn-Mf0Dv7ugUUR_4MMXaI0o",
+      authDomain: "luvv-archive.firebaseapp.com",
+      databaseURL: "https://luvv-archive-default-rtdb.firebaseio.com",
+      projectId: "luvv-archive",
+      storageBucket: "luvv-archive.firebasestorage.app",
+      messagingSenderId: "997026807226",
+      appId: "1:997026807226:web:57d24a8920a7b4bcd2b183",
+      measurementId: "G-2VSGT1DZ8M"
+    };
+    const ADMIN_UID = "3qTESfrDejOZj5ER4BOO1Nyoa492";
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+    const poemsRef = ref(db, "poems");
 
-const ready=(async()=>{
-  try{db=await openDB();passHash=(await sget("pass"))||"";
-    for(const k of["lock","home"])wp[k]=(await sget("wp"+k))||null;}catch(e){}
-  if(!passHash)passHash=await hash(PASS);
-  makeUrls();applyBg();
-})();
+    const $ = (id) => document.getElementById(id);
+    const state = { poems: [], view: "home", user: null, isAdmin: false, activePoem: null, saved: loadSaved(), toastTimer: null };
+    function loadSaved() {
+      try { const x = JSON.parse(localStorage.getItem("luvvArchiveSaved") || "[]"); return Array.isArray(x) ? x.map(String) : []; }
+      catch { return []; }
+    }
+    function persistSaved() { try { localStorage.setItem("luvvArchiveSaved", JSON.stringify(state.saved)); } catch {} }
+    function esc(value) {
+      return String(value ?? "").replace(/[&<>"']/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[ch]));
+    }
+    function dateLabel(value) {
+      if (!value) return "From the archive";
+      const d = new Date(value);
+      return Number.isNaN(d.getTime()) ? "From the archive" : d.toLocaleDateString(undefined, { day:"numeric", month:"short", year:"numeric" });
+    }
+    function toast(message) {
+      const el = $("toast"); el.textContent = message; el.classList.add("show");
+      clearTimeout(state.toastTimer); state.toastTimer = setTimeout(() => el.classList.remove("show"), 2600);
+    }
+    function showMessage(id, message, show = true) {
+      const el = $(id); el.textContent = message; el.classList.toggle("hidden", !show);
+    }
+    function normalizePoems(raw) {
+      if (!raw || typeof raw !== "object") return [];
+      return Object.entries(raw).map(([id, p]) => ({ id, ...(p || {}) })).filter(p => p.title && p.text).sort((a,b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+    }
+    onValue(poemsRef, snap => {
+      state.poems = normalizePoems(snap.val());
+      render();
+      renderAdminList();
+    }, err => {
+      $("poemGrid").innerHTML = '<div class="empty"><strong>Could not load the archive</strong>' + esc(err.message || "Check your Firebase database rules and connection.") + '</div>';
+      $("resultCount").textContent = "Connection issue";
+    });
 
-/* ---------- wallpapers ---------- */
-function makeUrls(){["lock","home"].forEach(k=>{if(wpU[k])URL.revokeObjectURL(wpU[k]);wpU[k]=wp[k]?URL.createObjectURL(wp[k]):""})}
-function applyBg(){
-  const u=wpU[locked?"lock":"home"],w=$("wp");
-  w.style.backgroundImage=u?`url("${u}")`:"";w.classList.toggle("on",!!u);
-  [["tLock","lock"],["tHome","home"]].forEach(([id,k])=>{
-    $(id).style.backgroundImage=wpU[k]?`url("${wpU[k]}")`:"";$(id).classList.toggle("has",!!wpU[k]);});
-}
-$("seg").onclick=e=>{const b=e.target.closest("button");if(!b)return;target=b.dataset.t;
-  [...$("seg").children].forEach(x=>x.classList.toggle("on",x===b))};
-$("wpPick").onclick=()=>{picking=true;$("wpFile").click()};
-const keysFor=()=>target==="both"?["lock","home"]:[target];
-$("wpFile").onchange=async e=>{
-  const f=e.target.files[0];e.target.value="";picking=false;
-  if(!f||!f.type.startsWith("image/"))return;
-  try{for(const k of keysFor()){wp[k]=f;if(db)await sset("wp"+k,f);}
-    makeUrls();applyBg();toast("Wallpaper updated");}
-  catch(err){toast("Could not save wallpaper")}
-};
-$("wpReset").onclick=async()=>{
-  try{for(const k of keysFor()){wp[k]=null;if(db)await sdel("wp"+k);}
-    makeUrls();applyBg();toast("Wallpaper reset");}catch(e){}
-};
+    function getFilteredPoems() {
+      const q = $("searchInput").value.trim().toLocaleLowerCase();
+      const cat = $("categoryFilter").value;
+      const lang = $("languageFilter").value;
+      const sort = $("sortFilter").value;
+      let list = state.poems.filter(p => {
+        if (state.view === "saved" && !state.saved.includes(p.id)) return false;
+        if (cat !== "all" && p.category !== cat) return false;
+        if (lang !== "all" && p.language !== lang) return false;
+        const haystack = [p.title, p.text, p.author, p.category, p.language].join(" ").toLocaleLowerCase();
+        return !q || haystack.includes(q);
+      });
+      if (sort === "oldest") list.sort((a,b) => Number(a.createdAt || 0) - Number(b.createdAt || 0));
+      if (sort === "az") list.sort((a,b) => String(a.title).localeCompare(String(b.title)));
+      return list;
+    }
+    function bookmarkSvg(filled) {
+      return `<svg viewBox="0 0 24 24" fill="${filled ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4.8A1.8 1.8 0 0 1 7.8 3h8.4A1.8 1.8 0 0 1 18 4.8V21l-6-3.8L6 21z"/></svg>`;
+    }
+    function render() {
+      $("savedCount").textContent = state.saved.length;
+      $("sectionKicker").textContent = state.view === "saved" ? "Your collection" : "The collection";
+      $("sectionTitle").textContent = state.view === "saved" ? "Lines you kept" : "Words to return to";
+      const list = getFilteredPoems();
+      $("resultCount").textContent = `${list.length} ${list.length === 1 ? "poem" : "poems"}`;
+      const grid = $("poemGrid");
+      if (!list.length) {
+        const title = state.view === "saved" ? "Nothing saved just yet" : (state.poems.length ? "No lines found" : "The archive is waiting");
+        const text = state.view === "saved" ? "Tap the bookmark on any poem to keep it here." : (state.poems.length ? "Try another search or clear the filters." : "New poems will appear here when the admin publishes them.");
+        grid.innerHTML = `<div class="empty"><strong>${esc(title)}</strong>${esc(text)}</div>`;
+        return;
+      }
+      grid.innerHTML = list.map(p => {
+        const saved = state.saved.includes(p.id);
+        const excerpt = String(p.text).length > 170 ? String(p.text).slice(0,170).trimEnd() + "…" : p.text;
+        return `<article class="poem-card">
+          <div class="card-top"><span class="tag">${esc(p.category || "Poetry")}</span><button class="bookmark ${saved ? "saved" : ""}" data-save="${esc(p.id)}" aria-label="${saved ? "Remove saved poem" : "Save poem"}" title="${saved ? "Unsave" : "Save"}">${bookmarkSvg(saved)}</button></div>
+          <h3 class="poem-title">${esc(p.title)}</h3>
+          <div class="poem-excerpt">${esc(excerpt)}</div>
+          <div class="card-bottom"><span class="card-meta">${esc(p.language || "Poetry")} · ${esc(dateLabel(p.poemDate || p.createdAt))}</span><button class="text-btn" data-open="${esc(p.id)}">Read poem ↗</button></div>
+        </article>`;
+      }).join("");
+    }
+    function toggleSaved(id) {
+      if (state.saved.includes(id)) { state.saved = state.saved.filter(x => x !== id); toast("Removed from saved poems"); }
+      else { state.saved.push(id); toast("Saved to your collection"); }
+      persistSaved(); render();
+      if (state.activePoem?.id === id) updateDetailSave();
+    }
+    function openDetail(id) {
+      const p = state.poems.find(x => x.id === id); if (!p) return;
+      state.activePoem = p;
+      $("detailTitle").textContent = p.title;
+      $("detailMeta").textContent = [p.category, p.language, p.author ? `By ${p.author}` : "", dateLabel(p.poemDate || p.createdAt)].filter(Boolean).join(" · ");
+      $("detailText").textContent = p.text;
+      updateDetailSave();
+      $("detailBackdrop").classList.add("open");
+      document.body.style.overflow = "hidden";
+    }
+    function updateDetailSave() {
+      if (!state.activePoem) return;
+      const saved = state.saved.includes(state.activePoem.id);
+      $("detailSave").textContent = saved ? "✓ Saved — remove" : "Save poem";
+    }
+    function closeDetail() { $("detailBackdrop").classList.remove("open"); document.body.style.overflow = ""; }
+    function switchView(view) {
+      state.view = view;
+      document.querySelectorAll(".nav-btn").forEach(b => b.classList.toggle("active", b.dataset.view === view));
+      $("libraryView").classList.toggle("hidden", view === "admin");
+      $("adminView").classList.toggle("hidden", view !== "admin");
+      $("hero").classList.toggle("hidden", view === "admin");
+      $("mainNav").classList.remove("open");
+      if (view !== "admin") render();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    function resetForm() {
+      $("poemForm").reset(); $("editId").value = ""; $("editorHeading").textContent = "Add a new poem"; $("publishButton").textContent = "Publish poem"; $("cancelEdit").classList.add("hidden");
+    }
+    function renderAdminList() {
+      const list = $("adminPoemList");
+      if (!state.isAdmin) { list.innerHTML = '<p class="loading">Sign in with the configured admin account to manage poems.</p>'; return; }
+      if (!state.poems.length) { list.innerHTML = '<p class="loading">No published poems yet. Add your first one above.</p>'; return; }
+      list.innerHTML = state.poems.map(p => `<div class="admin-item"><div><strong>${esc(p.title)}</strong><small>${esc(p.category || "Poetry")} · ${esc(p.language || "")}</small></div><div class="admin-actions"><button class="btn" data-edit="${esc(p.id)}">Edit</button><button class="btn danger" data-delete="${esc(p.id)}">Delete</button></div></div>`).join("");
+    }
+    onAuthStateChanged(auth, user => {
+      state.user = user;
+      state.isAdmin = !!user && user.uid === ADMIN_UID;
+      $("loginCard").classList.toggle("hidden", state.isAdmin);
+      $("editorCard").classList.toggle("hidden", !state.isAdmin);
+      if (user && !state.isAdmin) {
+        showMessage("loginMessage", "This account is not the configured admin account. Sign out and use the correct account.", true);
+      }
+      if (state.isAdmin) { $("adminIdentity").textContent = `Signed in as ${user.email || "admin"} · Admin verified`; showMessage("loginMessage", "", false); }
+      renderAdminList();
+    });
 
-/* ---------- lock screen ---------- */
-const L={2:"ABC",3:"DEF",4:"GHI",5:"JKL",6:"MNO",7:"PQRS",8:"TUV",9:"WXYZ"};
-[1,2,3,4,5,6,7,8,9,0].forEach(n=>{const b=document.createElement("button");
-  b.className="k"+(n===0?" z":"");b.innerHTML=n+"<small>"+(L[n]||"")+"</small>";
-  b.onclick=()=>press(String(n));$("pad").appendChild(b)});
-const dl=document.createElement("button");dl.className="del";dl.id="dl";dl.textContent="Delete";dl.style.visibility="hidden";
-dl.onclick=()=>press("⌫");$("pad").appendChild(dl);
-function drawDots(){[...$("dots").children].forEach((d,i)=>d.classList.toggle("on",i<entered.length));
-  dl.style.visibility=entered.length?"visible":"hidden"}
-function press(k){
-  if(!locked||busy)return;
-  if(k==="⌫")entered=entered.slice(0,-1);
-  else if(entered.length<6)entered+=k;
-  drawDots();if(entered.length===6)check();
-}
-async function check(){
-  busy=true;await ready;const h=await hash(entered);
-  setTimeout(()=>{
-    if(h===passHash){busy=false;unlock()}
-    else{const d=$("dots");d.classList.remove("shake");void d.offsetWidth;d.classList.add("shake");
-      $("ttl").textContent="Wrong Passcode. Try Again";
-      entered="";drawDots();busy=false;
-      setTimeout(()=>{if(locked)$("ttl").textContent="Enter Passcode"},1800);}
-  },150);
-}
-document.addEventListener("keydown",e=>{
-  if(!$("set").classList.contains("hidden")){if(e.key==="Escape")closeSet();return}
-  if(!$("pv").classList.contains("hidden")){
-    if(e.key==="Escape")closePv();
-    if(e.key==="ArrowLeft")step(-1);
-    if(e.key==="ArrowRight")step(1);return;}
-  if(/^\d$/.test(e.key))press(e.key);else if(e.key==="Backspace")press("⌫");
-});
-async function unlock(){
-  entered="";drawDots();locked=false;$("ttl").textContent="Enter Passcode";
-  $("lock").classList.add("hidden");$("vault").classList.remove("hidden");applyBg();
-  try{if(db)photos=await req(tx("p","readonly").getAll())}catch(e){toast("Storage is blocked in this browser")}
-  render();
-}
-function lock(){
-  closePv();closeSet();locked=true;applyBg();
-  $("vault").classList.add("hidden");$("lock").classList.remove("hidden");
-  $("grid").innerHTML="";urls.forEach(u=>URL.revokeObjectURL(u));urls.clear();
-}
-$("lockBtn").onclick=lock;
-document.addEventListener("visibilitychange",()=>{if(document.hidden&&!locked&&!picking)lock()});
-window.addEventListener("focus",()=>setTimeout(()=>{picking=false},1200));
-
-/* ---------- gallery ---------- */
-function render(){
-  const g=$("grid");g.innerHTML="";
-  photos.sort((a,b)=>b.t-a.t).forEach((p,i)=>{
-    const b=document.createElement("button");b.className="tile";
-    const im=new Image();im.src=urlOf(p);im.alt="";im.loading="lazy";b.appendChild(im);
-    b.onclick=()=>openPv(i);g.appendChild(b);});
-  $("count").textContent=photos.length+(photos.length===1?" photo":" photos");
-  $("empty").classList.toggle("hidden",photos.length>0);
-}
-$("add").onclick=$("emptyAdd").onclick=()=>{picking=true;$("file").click()};
-$("file").onchange=async e=>{
-  picking=false;
-  const files=[...e.target.files].filter(f=>f.type.startsWith("image/"));
-  e.target.value="";if(!files.length)return;
-  try{for(const f of files){
-      const rec={name:f.name,type:f.type,blob:f,t:Date.now()};
-      rec.id=await req(tx("p","readwrite").add(rec));photos.push(rec);}
-    render();toast(files.length+(files.length>1?" photos":" photo")+" saved");}
-  catch(err){toast("Could not save. Storage may be full.")}
-};
-
-/* ---------- full preview ---------- */
-function openPv(i){cur=i;showPv();$("pv").classList.remove("hidden")}
-function showPv(){const p=photos[cur];if(!p)return closePv();
-  $("pimg").src=urlOf(p);$("pcnt").textContent=(cur+1)+" / "+photos.length}
-function step(d){if(photos.length<2)return;cur=(cur+d+photos.length)%photos.length;showPv()}
-function closePv(){$("pv").classList.add("hidden");$("pimg").removeAttribute("src")}
-$("close").onclick=closePv;$("prev").onclick=()=>step(-1);$("next").onclick=()=>step(1);
-$("del").onclick=async()=>{
-  const p=photos[cur];if(!p||!confirm("Delete this photo from the vault?"))return;
-  await req(tx("p","readwrite").delete(p.id));URL.revokeObjectURL(urls.get(p.id));urls.delete(p.id);
-  photos.splice(cur,1);render();
-  if(!photos.length)closePv();else{cur=Math.min(cur,photos.length-1);showPv()}
-};
-let sx=0;
-$("pv").addEventListener("touchstart",e=>{sx=e.touches[0].clientX},{passive:true});
-$("pv").addEventListener("touchend",e=>{const d=e.changedTouches[0].clientX-sx;if(Math.abs(d)>50)step(d>0?-1:1)});
-
-/* ---------- settings: password ---------- */
-function openSet(){$("smsg").textContent="";$("set").classList.remove("hidden");applyBg()}
-function closeSet(){$("set").classList.add("hidden");["pc","pn","pr"].forEach(i=>$(i).value="")}
-$("setBtn").onclick=openSet;$("sClose").onclick=closeSet;
-$("set").onclick=e=>{if(e.target.id==="set")closeSet()};
-["pc","pn","pr"].forEach(i=>$(i).oninput=e=>{e.target.value=e.target.value.replace(/\D/g,"")});
-function smsg(t,ok){const m=$("smsg");m.textContent=t;m.classList.toggle("ok",!!ok)}
-$("pSave").onclick=async()=>{
-  const c=$("pc").value,n=$("pn").value,r=$("pr").value;
-  if(await hash(c)!==passHash)return smsg("Current password is wrong.");
-  if(!/^\d{6}$/.test(n))return smsg("New password must be exactly 6 digits.");
-  if(n!==r)return smsg("New passwords don't match.");
-  if(n===c)return smsg("Choose a different password.");
-  try{const h=await hash(n);if(db)await sset("pass",h);passHash=h;
-    ["pc","pn","pr"].forEach(i=>$(i).value="");smsg("Password changed.",true);toast("Password changed");}
-  catch(e){smsg("Could not save the password.")}
-};
-
-function toast(t){
-  const d=document.createElement("div");d.className="toast glass";d.textContent=t;document.body.appendChild(d);
-  setTimeout(()=>d.remove(),2200);
-}
-</script>
+    $("mainNav").addEventListener("click", e => { const b = e.target.closest("[data-view]"); if (b) switchView(b.dataset.view); });
+    $("homeBrand").addEventListener("click", e => { e.preventDefault(); switchView("home"); });
+    $("menuToggle").addEventListener("click", () => $("mainNav").classList.toggle("open"));
+    ["searchInput","categoryFilter","languageFilter","sortFilter"].forEach(id => $(id).addEventListener(id === "searchInput" ? "input" : "change", render));
+    $("clearFilters").addEventListener("click", () => { $("searchInput").value = ""; $("categoryFilter").value = "all"; $("languageFilter").value = "all"; $("sortFilter").value = "newest"; render(); });
+    $("poemGrid").addEventListener("click", e => {
+      const save = e.target.closest("[data-save]"); if (save) { toggleSaved(save.dataset.save); return; }
+      const open = e.target.closest("[data-open]"); if (open) openDetail(open.dataset.open);
+    });
+    $("closeDetail").addEventListener("click", closeDetail);
+    $("detailBackdrop").addEventListener("click", e => { if (e.target === $("detailBackdrop")) closeDetail(); });
+    document.addEventListener("keydown", e => { if (e.key === "Escape") closeDetail(); });
+    $("detailSave").addEventListener("click", () => { if (state.activePoem) toggleSaved(state.activePoem.id); });
+    $("copyPoem").addEventListener("click", async () => {
+      if (!state.activePoem) return;
+      try { await navigator.clipboard.writeText(`${state.activePoem.title}\n\n${state.activePoem.text}`); toast("Poem copied"); }
+      catch { toast("Copy is unavailable in this browser"); }
+    });
+    $("sharePoem").addEventListener("click", async () => {
+      if (!state.activePoem) return;
+      const shareData = { title: state.activePoem.title, text: state.activePoem.text, url: location.href };
+      try { if (navigator.share) await navigator.share(shareData); else { await navigator.clipboard.writeText(`${shareData.title}\n\n${shareData.text}`); toast("Poem text copied to share"); } }
+      catch (err) { if (err?.name !== "AbortError") toast("Sharing is unavailable here"); }
+    });
+    $("loginForm").addEventListener("submit", async e => {
+      e.preventDefault(); $("loginButton").disabled = true; $("loginButton").textContent = "Signing in…";
+      showMessage("loginMessage", "", false);
+      try {
+        const cred = await signInWithEmailAndPassword(auth, $("adminEmail").value.trim(), $("adminPassword").value);
+        if (cred.user.uid !== ADMIN_UID) {
+          await signOut(auth);
+          showMessage("loginMessage", "This account does not match the configured admin UID.", true);
+        } else { toast("Admin signed in"); }
+      } catch (err) { showMessage("loginMessage", err.message || "Sign-in failed. Check your details.", true); }
+      finally { $("loginButton").disabled = false; $("loginButton").textContent = "Sign in"; }
+    });
+    $("signOutButton").addEventListener("click", async () => { await signOut(auth); resetForm(); toast("Signed out"); });
+    $("poemForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      if (!state.isAdmin || auth.currentUser?.uid !== ADMIN_UID) { showMessage("editorMessage", "Admin verification failed. Sign in again.", true); return; }
+      const id = $("editId").value;
+      const title = $("poemTitle").value.trim();
+      const text = $("poemText").value.trim();
+      if (!title || !text) { showMessage("editorMessage", "Please add a title and poem text.", true); return; }
+      const existing = state.poems.find(p => p.id === id);
+      const record = {
+        title, text, category: $("poemCategory").value, language: $("poemLanguage").value,
+        author: $("poemAuthor").value.trim(), poemDate: $("poemDate").value || "",
+        createdAt: existing?.createdAt || Date.now(), updatedAt: Date.now()
+      };
+      $("publishButton").disabled = true; $("publishButton").textContent = "Saving…";
+      try {
+        if (id) await update(ref(db, `poems/${id}`), record);
+        else { const newRef = push(poemsRef); await set(newRef, record); }
+        resetForm(); showMessage("editorMessage", id ? "Poem updated successfully." : "Poem published successfully.", true); toast(id ? "Poem updated" : "Poem published");
+      } catch (err) { showMessage("editorMessage", `Could not save poem: ${err.message || "Check database rules."}`, true); }
+      finally { $("publishButton").disabled = false; $("publishButton").textContent = $("editId").value ? "Save changes" : "Publish poem"; }
+    });
+    $("cancelEdit").addEventListener("click", resetForm);
+    $("adminPoemList").addEventListener("click", async e => {
+      const edit = e.target.closest("[data-edit]");
+      const del = e.target.closest("[data-delete]");
+      if (edit) {
+        const p = state.poems.find(x => x.id === edit.dataset.edit); if (!p) return;
+        $("editId").value = p.id; $("poemTitle").value = p.title || ""; $("poemText").value = p.text || "";
+        $("poemCategory").value = p.category || "Other"; $("poemLanguage").value = p.language || "Hinglish";
+        $("poemAuthor").value = p.author || ""; $("poemDate").value = /^\d{4}-\d{2}-\d{2}$/.test(p.poemDate || "") ? p.poemDate : "";
+        $("editorHeading").textContent = "Edit poem"; $("publishButton").textContent = "Save changes"; $("cancelEdit").classList.remove("hidden");
+        $("poemTitle").focus(); window.scrollTo({ top: 0, behavior: "smooth" }); return;
+      }
+      if (del) {
+        const p = state.poems.find(x => x.id === del.dataset.delete); if (!p) return;
+        if (!confirm(`Delete “${p.title}”? This cannot be undone.`)) return;
+        try { await remove(ref(db, `poems/${p.id}`)); state.saved = state.saved.filter(x => x !== p.id); persistSaved(); render(); toast("Poem deleted"); }
+        catch (err) { toast(`Delete failed: ${err.message || "Check database rules"}`); }
+      }
+    });
+    $("year").textContent = new Date().getFullYear();
+    render();
+  </script>
 </body>
 </html>
